@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/accessible_button.dart';
+import '../../../../core/widgets/app_logo.dart';
 import 'login_form_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -13,13 +14,12 @@ class LoginScreen extends StatelessWidget {
       backgroundColor: AppColors.primaryContainer,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/logo.png', width: 90, height: 90),
-              const SizedBox(height: 24),
+              const Spacer(),
+              const AppLogo(size: 88),
+              const SizedBox(height: 20),
               const Text(
                 'AI Elderly Assistant',
                 style: TextStyle(
@@ -30,7 +30,7 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'صوتك هو وسيلتك الرئيسية 🎙️\nSimple voice help for a safer, healthier life.',
+                'Your voice. Our support.\nSimple help for a safer, healthier and more connected life.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -38,42 +38,36 @@ class LoginScreen extends StatelessWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 48),
+              const Spacer(),
               AccessibleButton(
-                label: 'ابدأ الآن / Get Started',
-                semanticLabel: 'ابدأ الآن والانتقال لإعدادات المساعد الصوتي',
+                label: 'Get Started',
+                semanticLabel: 'Get started and set up your assistant',
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const OnboardingScreen(),
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 16),
               SizedBox(
-                height: 52,
+                height: 56,
                 width: double.infinity,
                 child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.primary, width: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginFormScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginFormScreen(),
+                      ),
                     );
                   },
-                  child: const Text(
-                    'تسجيل الدخول / Login',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
+                  child: const Text('Login'),
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

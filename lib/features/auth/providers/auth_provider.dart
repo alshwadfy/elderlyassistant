@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class AuthState {
   final bool isAuthenticated;
   final String? userName;
-  final String? userPhone;
+  final String? userEmail;
   final bool isLoading;
   final String? error;
   final bool codeSent;
@@ -11,7 +11,7 @@ class AuthState {
   const AuthState({
     this.isAuthenticated = false,
     this.userName,
-    this.userPhone,
+    this.userEmail,
     this.isLoading = false,
     this.error,
     this.codeSent = false,
@@ -20,7 +20,7 @@ class AuthState {
   AuthState copyWith({
     bool? isAuthenticated,
     String? userName,
-    String? userPhone,
+    String? userEmail,
     bool? isLoading,
     String? error,
     bool? codeSent,
@@ -28,7 +28,7 @@ class AuthState {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       userName: userName ?? this.userName,
-      userPhone: userPhone ?? this.userPhone,
+      userEmail: userEmail ?? this.userEmail,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       codeSent: codeSent ?? this.codeSent,
@@ -39,14 +39,14 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(const AuthState());
 
-  Future<bool> login(String phone, String password) async {
+  Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 400));
 
-    if (phone.trim().isEmpty || password.trim().isEmpty) {
+    if (email.trim().isEmpty || password.trim().isEmpty) {
       state = state.copyWith(
         isLoading: false,
-        error: 'رجاء أدخل رقم الهاتف وكلمة المرور / Please enter phone and password',
+        error: 'Please enter email and password',
       );
       return false;
     }
@@ -54,24 +54,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       isAuthenticated: true,
       isLoading: false,
-      userPhone: phone,
-      userName: 'جدي العزيز / Dear User',
+      userEmail: email,
+      userName: 'Adel',
     );
     return true;
   }
 
   Future<bool> register({
     required String name,
+    required String email,
     required String phone,
-    required String emergencyContact,
+    required String password,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 400));
 
-    if (name.isEmpty || phone.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       state = state.copyWith(
         isLoading: false,
-        error: 'يرجى إكمال البيانات / Please complete all fields',
+        error: 'Please complete all required fields',
       );
       return false;
     }
@@ -79,7 +80,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       isLoading: false,
       userName: name,
-      userPhone: phone,
+      userEmail: email,
       codeSent: true,
     );
     return true;
@@ -87,12 +88,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<bool> verifyCode(String code) async {
     state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 400));
 
     if (code.trim() != '1234' && code.trim().length != 4) {
       state = state.copyWith(
         isLoading: false,
-        error: 'رمز التحقق غير صحيح (جرب 1234) / Invalid code (Try 1234)',
+        error: 'Invalid code. Demo code is 1234',
       );
       return false;
     }

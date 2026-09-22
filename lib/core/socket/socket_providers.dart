@@ -1,13 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'socket_service.dart';
 
-/// Single shared SocketService provider
+/// Shared SocketService. Connection is opt-in until the backend URL is confirmed.
 final socketServiceProvider = Provider<SocketService>((ref) {
   final service = SocketService();
-  service.connect();
-  ref.onDispose(() {
-    service.dispose();
-  });
+  ref.onDispose(service.dispose);
   return service;
 });
 

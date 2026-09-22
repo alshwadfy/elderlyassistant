@@ -1,30 +1,81 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:elderlyassistant/main.dart';
+import 'package:elderlyassistant/core/widgets/accessible_button.dart';
+import 'package:elderlyassistant/core/widgets/error_view.dart';
+import 'package:elderlyassistant/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:elderlyassistant/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('login splash shows Get Started and Login', (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Get Started'), findsOneWidget);
+    expect(find.text('Login'), findsOneWidget);
+    expect(find.textContaining('Your voice'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('Get Started opens onboarding then Home', (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.tap(find.text('Get Started'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Meet Your Assistant'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Complete Setup & Go Home'));
+    await tester.tap(find.text('Complete Setup & Go Home'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Good morning, Adel'), findsOneWidget);
+    expect(find.text('Find a Doctor'), findsOneWidget);
+    expect(find.text('Home'), findsWidgets);
+  });
+
+  testWidgets('ErrorView retry is large and tappable', (tester) async {
+    var retried = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ErrorView(
+            message: 'Could not load reminders',
+            onRetry: () => retried = true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Could not load reminders'), findsOneWidget);
+    await tester.tap(find.text('إعادة المحاولة / Retry'));
+    expect(retried, isTrue);
+  });
+
+  testWidgets('AccessibleButton meets 48px minimum tap target', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 220,
+              child: AccessibleButton(
+                label: 'Continue',
+                semanticLabel: 'Continue',
+                onPressed: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final size = tester.getSize(find.byType(AccessibleButton));
+    expect(size.height, greaterThanOrEqualTo(48));
+    expect(size.width, greaterThanOrEqualTo(48));
+  });
+
+  testWidgets('primary palette uses Figma blue', (tester) async {
+    expect(AppColors.primary, const Color(0xFF3B5BDB));
   });
 }

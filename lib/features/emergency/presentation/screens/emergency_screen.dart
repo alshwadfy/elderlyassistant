@@ -1,45 +1,53 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/accessible_button.dart';
+import '../../../../core/widgets/demo_snackbar.dart';
+import '../../../home/presentation/screens/home_shell_screen.dart';
 
 class EmergencyScreen extends StatelessWidget {
   const EmergencyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.emergencyBg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Emergency Help',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
+    return ColoredBox(
+      color: AppColors.emergencyBg,
+      child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Back',
+                    icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                    onPressed: () {
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Emergency Help',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
+                ],
+              ),
               const Spacer(),
-              
-              // Pulsing SOS Button Simulation
               Container(
                 width: 180,
                 height: 180,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.emergency.withOpacity(0.1),
+                  color: AppColors.emergency.withValues(alpha: 0.1),
                 ),
                 child: Center(
                   child: Container(
@@ -47,7 +55,7 @@ class EmergencyScreen extends StatelessWidget {
                     height: 140,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.emergency.withOpacity(0.2),
+                      color: AppColors.emergency.withValues(alpha: 0.2),
                     ),
                     child: Center(
                       child: Container(
@@ -67,9 +75,7 @@ class EmergencyScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 48),
-              
+              const SizedBox(height: 32),
               const Text(
                 'Emergency Help',
                 style: TextStyle(
@@ -78,47 +84,52 @@ class EmergencyScreen extends StatelessWidget {
                   color: AppColors.emergency,
                 ),
               ),
-              
-              const SizedBox(height: 16),
-              
+              const SizedBox(height: 12),
               const Text(
-                'Need immediate assistance?\n\nYou will be connected with your family or emergency services.',
+                'Need immediate assistance?\nYou will be connected with your family or emergency services.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
                   color: AppColors.textSecondary,
-                  height: 1.5,
+                  height: 1.4,
                 ),
               ),
-              
               const Spacer(),
-              
-              // Actions
               AccessibleButton(
                 label: 'Call Emergency',
                 semanticLabel: 'Call emergency services',
                 icon: Icons.phone,
                 backgroundColor: AppColors.emergency,
-                onPressed: () {},
+                onPressed: () {
+                  showDemoSnackBar(context, 'Calling emergency services (demo)');
+                },
               ),
               const SizedBox(height: 16),
-              
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.people_outline, color: AppColors.emergency),
-                label: const Text(
-                  'Contact Family',
-                  style: TextStyle(color: AppColors.emergency),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.emergency, width: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              SizedBox(
+                height: 56,
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(AppShellRoutes.family);
+                  },
+                  icon: const Icon(Icons.people_outline, color: AppColors.emergency),
+                  label: const Text(
+                    'Contact Family',
+                    style: TextStyle(
+                      color: AppColors.emergency,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.emergency, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
             ],
           ),
         ),

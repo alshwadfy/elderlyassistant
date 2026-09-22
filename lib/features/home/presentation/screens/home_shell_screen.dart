@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_bottom_nav_bar.dart';
 import '../../../../core/widgets/app_header.dart';
-import 'home_tab_view.dart';
-import '../../../reminders/presentation/screens/reminders_screen.dart';
-
 import '../../../doctors/presentation/screens/appointments_screen.dart';
+import '../../../doctors/presentation/screens/doctor_search_screen.dart';
+import '../../../emergency/presentation/screens/emergency_screen.dart';
+import '../../../emergency/presentation/screens/family_circle_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../../reminders/presentation/screens/reminders_screen.dart';
+import '../../../voice_assistant/presentation/screens/voice_assistant_screen.dart';
+import 'home_tab_view.dart';
+
+class AppShellRoutes {
+  static const home = '/home';
+  static const schedule = '/schedule';
+  static const reminders = '/reminders';
+  static const more = '/more';
+  static const doctors = '/doctors';
+  static const family = '/family';
+  static const emergency = '/emergency';
+  static const voice = '/voice';
+}
 
 class HomeShellScreen extends StatefulWidget {
   const HomeShellScreen({super.key});
@@ -14,46 +30,88 @@ class HomeShellScreen extends StatefulWidget {
 }
 
 class _HomeShellScreenState extends State<HomeShellScreen> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
   int _currentIndex = 0;
+  bool _showHeader = true;
 
-  final List<Widget> _screens = [
-    const HomeTabView(),
-    const AppointmentsScreen(),
-    const RemindersScreen(),
-    const ProfileScreen(),
+  static const _tabRoutes = [
+    AppShellRoutes.home,
+    AppShellRoutes.schedule,
+    AppShellRoutes.reminders,
+    AppShellRoutes.more,
   ];
+
+  void _onTabTap(int index) {
+    setState(() {
+      _currentIndex = index;
+      _showHeader = true;
+    });
+    _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      _tabRoutes[index],
+      (route) => false,
+    );
+  }
+
+  void _syncChrome(String? name) {
+    final hideHeader = name == AppShellRoutes.emergency;
+    final tabIndex = switch (name) {
+      AppShellRoutes.schedule => 1,
+      AppShellRoutes.reminders => 2,
+      AppShellRoutes.more => 3,
+      _ => 0,
+    };
+    if (!mounted) return;
+    if (_showHeader == !hideHeader && _currentIndex == tabIndex) return;
+    setState(() {
+      _showHeader = !hideHeader;
+      _currentIndex = tabIndex;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppHeader(),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      backgroundColor: _showHeader ? AppColors.background : AppColors.emergencyBg,
+      appBar: _showHeader ? const AppHeader() : null,
+      body: Navigator(
+        key: _navigatorKey,
+        initialRoute: AppShellRoutes.home,
+        onGenerateRoute: (settings) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _syncChrome(settings.name);
+          });
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => _pageFor(settings.name),
+          );
+        },
+      ),
+      bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            activeIcon: Icon(Icons.calendar_today),
-            label: 'Schedule',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none_outlined),
-            activeIcon: Icon(Icons.notifications),
-            label: 'Reminders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz_outlined),
-            activeIcon: Icon(Icons.more_horiz),
-            label: 'More',
-          ),
-        ],
+        onTap: _onTabTap,
       ),
     );
+  }
+
+  Widget _pageFor(String? name) {
+    switch (name) {
+      case AppShellRoutes.schedule:
+        return const AppointmentsScreen();
+      case AppShellRoutes.reminders:
+        return const RemindersScreen();
+      case AppShellRoutes.more:
+        return const ProfileScreen();
+      case AppShellRoutes.doctors:
+        return const DoctorSearchScreen();
+      case AppShellRoutes.family:
+        return const FamilyCircleScreen();
+      case AppShellRoutes.emergency:
+        return const EmergencyScreen();
+      case AppShellRoutes.voice:
+        return const VoiceAssistantScreen();
+      case AppShellRoutes.home:
+      default:
+        return const HomeTabView();
+    }
   }
 }

@@ -69,7 +69,7 @@ class DoctorCard extends StatelessWidget {
             ElevatedButton(
               onPressed: onBook,
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(80, 40),
+                minimumSize: const Size(88, 48),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

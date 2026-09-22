@@ -7,10 +7,12 @@ class ReminderCard extends StatelessWidget {
     super.key,
     required this.reminder,
     required this.onToggle,
+    this.accent = AppColors.primary,
   });
 
   final ReminderModel reminder;
   final VoidCallback onToggle;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +28,14 @@ class ReminderCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isCompleted ? AppColors.successContainer : AppColors.primaryContainer,
+                color: isCompleted
+                    ? AppColors.successContainer
+                    : accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                reminder.type == 'medication' ? Icons.medication_outlined : Icons.calendar_today_outlined,
-                color: isCompleted ? AppColors.success : AppColors.primary,
+                Icons.medication_outlined,
+                color: isCompleted ? AppColors.success : accent,
                 size: 28,
               ),
             ),
@@ -89,8 +93,9 @@ class ReminderCard extends StatelessWidget {
                 onTap: onToggle,
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
-                  width: 32,
-                  height: 32,
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -100,7 +105,7 @@ class ReminderCard extends StatelessWidget {
                     color: isCompleted ? AppColors.success : Colors.transparent,
                   ),
                   child: isCompleted
-                      ? const Icon(Icons.check, size: 20, color: AppColors.textLight)
+                      ? const Icon(Icons.check, size: 22, color: AppColors.textLight)
                       : null,
                 ),
               ),

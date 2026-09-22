@@ -1,64 +1,61 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../doctors/data/models/doctor_model.dart';
+import '../../doctors/providers/doctors_provider.dart';
+import '../data/models/voice_chat_models.dart';
 import '../data/models/voice_interaction_model.dart';
 
-enum VoiceAssistantState { idle, listening, processing, speaking }
-
-class VoiceAssistantStateData {
-  VoiceAssistantStateData({
-    required this.state,
-    this.currentTranscript = '',
-    this.lastInteraction,
-  });
-
-  final VoiceAssistantState state;
-  final String currentTranscript;
-  final VoiceInteractionModel? lastInteraction;
-
-  VoiceAssistantStateData copyWith({
-    VoiceAssistantState? state,
-    String? currentTranscript,
-    VoiceInteractionModel? lastInteraction,
-  }) {
-    return VoiceAssistantStateData(
-      state: state ?? this.state,
-      currentTranscript: currentTranscript ?? this.currentTranscript,
-      lastInteraction: lastInteraction ?? this.lastInteraction,
-    );
-  }
-}
+export '../data/models/voice_chat_models.dart';
 
 class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantStateData> {
   VoiceAssistantNotifier()
-      : super(VoiceAssistantStateData(state: VoiceAssistantState.idle));
+      : super(
+          VoiceAssistantStateData(
+            state: VoiceAssistantState.idle,
+            history: const [
+              ChatBubble(
+                kind: ChatBubbleKind.assistant,
+                text: 'Hello Adel! How can I help you today?',
+              ),
+            ],
+          ),
+        );
 
   void startListening() {
     state = state.copyWith(
       state: VoiceAssistantState.listening,
-      currentTranscript: 'جاري الاستماع... / Listening...',
+      currentTranscript: 'Listening...',
     );
   }
 
-  void stopListeningAndProcess(String samplePhrase) async {
+  Future<void> stopListeningAndProcess(String samplePhrase) async {
+    final userBubble = ChatBubble(kind: ChatBubbleKind.user, text: samplePhrase);
     state = state.copyWith(
       state: VoiceAssistantState.processing,
       currentTranscript: samplePhrase,
+      history: [...state.history, userBubble],
     );
 
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 700));
 
-    // Map intent based on sample input
     String intent = 'GENERAL_QUESTION';
-    String responseText = 'أنا هنا لمساعدتك. / I am here to help you.';
+    String responseText = 'I am here to help. You can ask about reminders, doctors, or family.';
+    List<DoctorModel> doctors = const [];
 
-    if (samplePhrase.contains('دواء') || samplePhrase.contains('medicine') || samplePhrase.contains('remind')) {
+    final lower = samplePhrase.toLowerCase();
+    if (lower.contains('دواء') || lower.contains('medicine') || lower.contains('remind')) {
       intent = 'CREATE_REMINDER';
-      responseText = 'تم تسجيل تذكير الدواء بنجاح. / Medication reminder set.';
-    } else if (samplePhrase.contains('طبيب') || samplePhrase.contains('دكتور') || samplePhrase.contains('doctor')) {
+      responseText = 'Medication reminder saved for this evening.';
+    } else if (lower.contains('طبيب') ||
+        lower.contains('دكتور') ||
+        lower.contains('doctor')) {
       intent = 'FIND_DOCTOR';
-      responseText = 'وجدنا 3 أطباء بالقرب منك. / Found 3 doctors nearby.';
-    } else if (samplePhrase.contains('طوارئ') || samplePhrase.contains('help') || samplePhrase.contains('emergency')) {
+      responseText = 'I found some doctors near you. Here are the top options:';
+      doctors = DoctorsNotifier.mockDoctors.take(2).toList();
+    } else if (lower.contains('طوارئ') ||
+        lower.contains('help') ||
+        lower.contains('emergency')) {
       intent = 'EMERGENCY';
-      responseText = 'جاري الاتصال بالطوارئ واستدعاء المساعدة! / Triggering emergency call!';
+      responseText = 'I can take you to Emergency Help. Use the Emergency card on Home if you need it now.';
     }
 
     final interaction = VoiceInteractionModel(
@@ -70,17 +67,25 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantStateData> {
       timestamp: DateTime.now(),
     );
 
+    final nextHistory = [
+      ...state.history,
+      ChatBubble(kind: ChatBubbleKind.assistant, text: responseText),
+      if (doctors.isNotEmpty)
+        ChatBubble(kind: ChatBubbleKind.doctors, text: '', doctors: doctors),
+    ];
+
     state = state.copyWith(
       state: VoiceAssistantState.speaking,
       lastInteraction: interaction,
+      history: nextHistory,
     );
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 900));
     state = state.copyWith(state: VoiceAssistantState.idle);
   }
 }
 
 final voiceAssistantProvider =
-    StateNotifierProvider.autoDispose<VoiceAssistantNotifier, VoiceAssistantStateData>((ref) {
-  return VoiceAssistantNotifier();
-});
+    StateNotifierProvider.autoDispose<VoiceAssistantNotifier, VoiceAssistantStateData>(
+  (ref) => VoiceAssistantNotifier(),
+);

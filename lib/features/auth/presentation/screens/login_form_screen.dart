@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/accessible_button.dart';
+import '../../../../core/widgets/app_logo.dart';
+import '../../../../core/widgets/demo_snackbar.dart';
 import '../../../home/presentation/screens/home_shell_screen.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
@@ -14,19 +16,20 @@ class LoginFormScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginFormScreenState extends ConsumerState<LoginFormScreen> {
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'fatma.care@assistant.com');
+  final _passwordController = TextEditingController(text: 'password');
+  bool _obscure = true;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() async {
+  Future<void> _handleLogin() async {
     final success = await ref.read(authProvider.notifier).login(
-          _phoneController.text,
+          _emailController.text,
           _passwordController.text,
         );
 
@@ -44,31 +47,41 @@ class _LoginFormScreenState extends ConsumerState<LoginFormScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تسجيل الدخول / Login'),
-        centerTitle: true,
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
-              Center(
-                child: Image.asset('assets/logo.png', width: 90, height: 90),
+              const Row(
+                children: [
+                  AppLogo(size: 36),
+                  SizedBox(width: 10),
+                  Text(
+                    'AI Elderly Assistant',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               const Text(
-                'مرحباً بك مجدداً 👋\nWelcome Back',
-                textAlign: TextAlign.center,
+                'Welcome Back',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
+              const Text(
+                'Sign in below to start speaking with your assistant.',
+                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 28),
               if (authState.error != null) ...[
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -90,59 +103,71 @@ class _LoginFormScreenState extends ConsumerState<LoginFormScreen> {
                 const SizedBox(height: 20),
               ],
               Semantics(
-                label: 'رقم الهاتف / Phone Number Input',
+                label: 'Email address',
                 child: TextField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(fontSize: 18),
                   decoration: const InputDecoration(
-                    labelText: 'رقم الهاتف / Phone Number',
-                    prefixIcon: Icon(Icons.phone, size: 28),
-                    border: OutlineInputBorder(),
+                    labelText: 'Email Address',
+                    prefixIcon: Icon(Icons.mail_outline, size: 28),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Semantics(
-                label: 'كلمة المرور / Password Input',
+                label: 'Password',
                 child: TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscure,
                   style: const TextStyle(fontSize: 18),
-                  decoration: const InputDecoration(
-                    labelText: 'كلمة المرور / Password',
-                    prefixIcon: Icon(Icons.lock, size: 28),
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outline, size: 28),
+                    suffixIcon: IconButton(
+                      tooltip: _obscure ? 'Show password' : 'Hide password',
+                      icon: Icon(
+                        _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    showDemoSnackBar(context, 'Password reset will use the API later');
+                  },
+                  child: const Text('Forgot Password?'),
+                ),
+              ),
+              const SizedBox(height: 8),
               AccessibleButton(
-                label: authState.isLoading ? 'جاري التحقق...' : 'دخول / Login',
-                semanticLabel: 'زر تسجيل الدخول / Login Submit Button',
-                onPressed: authState.isLoading ? () {} : _handleLogin,
+                label: authState.isLoading ? 'Signing in...' : 'Log In Safely',
+                semanticLabel: 'Log in',
+                onPressed: authState.isLoading ? null : _handleLogin,
               ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'ليس لديك حساب؟ ',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  const Text('New here? ', style: TextStyle(fontSize: 16)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const RegisterScreen(),
+                        ),
                       );
                     },
                     child: const Text(
-                      'إنشاء حساب جديد',
+                      'Create a free account',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
                       ),
                     ),
                   ),

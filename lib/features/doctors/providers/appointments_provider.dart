@@ -10,7 +10,7 @@ class AppointmentsNotifier extends StateNotifier<List<AppointmentModel>> {
       doctorId: 'doc_1',
       doctorName: 'Dr. Ahmed Hassan',
       doctorType: 'General Practitioner',
-      dateTime: DateTime.now().add(const Duration(days: 2)),
+      dateTime: DateTime(2026, 9, 23, 10, 0),
       status: 'Upcoming',
     ),
     AppointmentModel(
@@ -18,12 +18,24 @@ class AppointmentsNotifier extends StateNotifier<List<AppointmentModel>> {
       doctorId: 'doc_2',
       doctorName: 'Dr. Salma Abdelaziz',
       doctorType: 'Internal Medicine',
-      dateTime: DateTime.now().subtract(const Duration(days: 10)),
+      dateTime: DateTime(2026, 9, 28, 14, 30),
+      status: 'Upcoming',
+    ),
+    AppointmentModel(
+      appointmentId: 'app_3',
+      doctorId: 'doc_3',
+      doctorName: 'Dr. Karim Nabil',
+      doctorType: 'Cardiology',
+      dateTime: DateTime(2026, 8, 12, 11, 0),
       status: 'Past',
     ),
   ];
+
+  void addAppointment(AppointmentModel appointment) {
+    state = [appointment, ...state];
+  }
 }
 
-final appointmentsProvider = StateNotifierProvider.autoDispose<AppointmentsNotifier, List<AppointmentModel>>((ref) {
+final appointmentsProvider = StateNotifierProvider<AppointmentsNotifier, List<AppointmentModel>>((ref) {
   return AppointmentsNotifier();
 });

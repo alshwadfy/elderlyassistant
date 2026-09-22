@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/accessible_button.dart';
 import '../../providers/auth_provider.dart';
+import 'login_form_screen.dart';
 import 'verify_code_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -14,22 +15,33 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _emergencyContactController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _acceptedPrivacy = false;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
-    _emergencyContactController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleRegister() async {
+  Future<void> _handleRegister() async {
+    if (!_acceptedPrivacy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please accept the privacy policy')),
+      );
+      return;
+    }
+
     final success = await ref.read(authProvider.notifier).register(
           name: _nameController.text,
+          email: _emailController.text,
           phone: _phoneController.text,
-          emergencyContact: _emergencyContactController.text,
+          password: _passwordController.text,
         );
 
     if (success && mounted) {
@@ -45,25 +57,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إنشاء حساب جديد / Create Account'),
-        centerTitle: true,
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 12),
               const Text(
-                'انضم إلينا بخطوات بسيطة ✨\nCreate Your Account',
-                textAlign: TextAlign.center,
+                'Create Account',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Join our caring community. We are here to support you every step of the way.',
+                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               if (authState.error != null) ...[
@@ -72,7 +83,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.emergencyContainer,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.emergency),
                   ),
                   child: Text(
                     authState.error!,
@@ -84,53 +94,78 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
               ],
-              Semantics(
-                label: 'الاسم الكامل / Full Name Input',
-                child: TextField(
-                  controller: _nameController,
-                  style: const TextStyle(fontSize: 18),
-                  decoration: const InputDecoration(
-                    labelText: 'الاسم الكامل / Full Name',
-                    prefixIcon: Icon(Icons.person, size: 28),
-                    border: OutlineInputBorder(),
-                  ),
+              TextField(
+                controller: _nameController,
+                style: const TextStyle(fontSize: 18),
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  hintText: 'e.g. Eleanor Vance',
+                  prefixIcon: Icon(Icons.person_outline, size: 28),
                 ),
               ),
-              const SizedBox(height: 20),
-              Semantics(
-                label: 'رقم الهاتف / Phone Number Input',
-                child: TextField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(fontSize: 18),
-                  decoration: const InputDecoration(
-                    labelText: 'رقم الهاتف / Phone Number',
-                    prefixIcon: Icon(Icons.phone, size: 28),
-                    border: OutlineInputBorder(),
-                  ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(fontSize: 18),
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  prefixIcon: Icon(Icons.mail_outline, size: 28),
                 ),
               ),
-              const SizedBox(height: 20),
-              Semantics(
-                label: 'رقم هاتف الطوارئ للتواصل / Emergency Contact Phone',
-                child: TextField(
-                  controller: _emergencyContactController,
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(fontSize: 18),
-                  decoration: const InputDecoration(
-                    labelText: 'رقم قريب/طوارئ / Emergency Contact',
-                    prefixIcon: Icon(Icons.contact_phone, size: 28),
-                    border: OutlineInputBorder(),
-                  ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                style: const TextStyle(fontSize: 18),
+                decoration: const InputDecoration(
+                  labelText: 'Phone or Emergency Contact',
+                  prefixIcon: Icon(Icons.phone_outlined, size: 28),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                style: const TextStyle(fontSize: 18),
+                decoration: const InputDecoration(
+                  labelText: 'Create Password',
+                  prefixIcon: Icon(Icons.lock_outline, size: 28),
+                ),
+              ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                value: _acceptedPrivacy,
+                onChanged: (value) {
+                  setState(() => _acceptedPrivacy = value ?? false);
+                },
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: const Text(
+                  'I agree to the Privacy Policy. Personal information is protected with secure safeguards.',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+              const SizedBox(height: 12),
               AccessibleButton(
-                label: authState.isLoading ? 'جاري الإرسال...' : 'متابعة / Continue',
-                semanticLabel: 'زر المتابعة لإرسال كود التحقق',
-                onPressed: authState.isLoading ? () {} : _handleRegister,
+                label: authState.isLoading
+                    ? 'Sending code...'
+                    : 'Continue to Verification',
+                semanticLabel: 'Continue to verification',
+                onPressed: authState.isLoading ? null : _handleRegister,
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginFormScreen(),
+                    ),
+                  );
+                },
+                child: const Text('Already have an account? Login'),
               ),
             ],
           ),

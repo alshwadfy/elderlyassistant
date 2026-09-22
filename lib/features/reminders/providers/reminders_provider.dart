@@ -9,27 +9,27 @@ class RemindersNotifier extends StateNotifier<List<ReminderModel>> {
       reminderId: 'rem_1',
       userId: 'user_01',
       type: 'medication',
-      title: 'دواء ضغط الدم / Blood Pressure Meds',
-      scheduledTime: DateTime.now().add(const Duration(hours: 1)),
-      repeatPattern: 'يومياً الساعة 8:00 مساءً / Daily 8:00 PM',
-      status: 'pending',
+      title: 'Blood Pressure Medicine',
+      scheduledTime: DateTime(2026, 9, 23, 8, 30),
+      repeatPattern: '1 tablet • After breakfast',
+      status: 'completed',
     ),
     ReminderModel(
       reminderId: 'rem_2',
       userId: 'user_01',
       type: 'medication',
-      title: 'فيتامين د / Vitamin D',
-      scheduledTime: DateTime.now().add(const Duration(hours: 3)),
-      repeatPattern: 'يومياً الساعة 10:00 مساءً / Daily 10:00 PM',
+      title: 'Vitamin D',
+      scheduledTime: DateTime(2026, 9, 23, 13, 0),
+      repeatPattern: '1 capsule • With lunch',
       status: 'pending',
     ),
     ReminderModel(
       reminderId: 'rem_3',
       userId: 'user_01',
-      type: 'appointment',
-      title: 'استشارة طبيب القلب / Cardiology Doctor',
-      scheduledTime: DateTime.now().add(const Duration(days: 1)),
-      repeatPattern: 'مرة واحدة / Once',
+      type: 'medication',
+      title: 'Pain Relief (if needed)',
+      scheduledTime: DateTime(2026, 9, 23, 20, 0),
+      repeatPattern: '1 tablet • After dinner',
       status: 'pending',
     ),
   ];
@@ -52,6 +52,6 @@ class RemindersNotifier extends StateNotifier<List<ReminderModel>> {
 }
 
 final remindersProvider =
-    StateNotifierProvider.autoDispose<RemindersNotifier, List<ReminderModel>>((ref) {
+    StateNotifierProvider<RemindersNotifier, List<ReminderModel>>((ref) {
   return RemindersNotifier();
 });
