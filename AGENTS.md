@@ -63,3 +63,12 @@
 - Be concise — skip explanations of basic Flutter concepts
 - When proposing a change, explain why, not just what
 - Ask when uncertain about intent rather than guessing
+
+
+## end of session 1 what to do next in session 2
+- next we need to add the widget file  and utils folder
+- fix the current errors
+- list the upcoming tasks
+-  what are the missing components and features
+- what do we need from the backend and ai microservice team 
+- what should we send them so they can match our payload
