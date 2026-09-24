@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Session review / audit markdown — throwaway output from AI-assisted review
+# sessions, not project documentation. AGENTS.md and README.md are NOT
+# covered by this and stay tracked.
+# Documentation-related markdown files
+docs/*.md

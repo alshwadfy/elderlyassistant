@@ -1,6 +1,5 @@
-import '../data/models/voice_interaction_model.dart';
-import '../../doctors/data/models/doctor_model.dart';
-
+import 'voice_interaction_model.dart';
+import '../../../doctors/data/models/doctor_model.dart';
 enum VoiceAssistantState { idle, listening, processing, speaking }
 
 enum ChatBubbleKind { assistant, user, doctors }
