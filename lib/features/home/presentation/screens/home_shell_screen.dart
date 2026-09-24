@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/socket/socket_providers.dart';
+import '../../../../core/socket/socket_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_nav_bar.dart';
 import '../../../../core/widgets/app_header.dart';
+import '../../../../core/widgets/connection_status_banner.dart';
 import '../../../doctors/presentation/screens/appointments_screen.dart';
 import '../../../doctors/presentation/screens/doctor_search_screen.dart';
 import '../../../emergency/presentation/screens/emergency_screen.dart';
@@ -22,14 +26,14 @@ class AppShellRoutes {
   static const voice = '/voice';
 }
 
-class HomeShellScreen extends StatefulWidget {
+class HomeShellScreen extends ConsumerStatefulWidget {
   const HomeShellScreen({super.key});
 
   @override
-  State<HomeShellScreen> createState() => _HomeShellScreenState();
+  ConsumerState<HomeShellScreen> createState() => _HomeShellScreenState();
 }
 
-class _HomeShellScreenState extends State<HomeShellScreen> {
+class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   int _currentIndex = 0;
   bool _showHeader = true;
@@ -70,21 +74,35 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final connection = ref.watch(socketConnectionStateProvider);
+    final connectionState =
+        connection.asData?.value ?? SocketConnectionState.idle;
+
     return Scaffold(
       backgroundColor: _showHeader ? AppColors.background : AppColors.emergencyBg,
       appBar: _showHeader ? const AppHeader() : null,
-      body: Navigator(
-        key: _navigatorKey,
-        initialRoute: AppShellRoutes.home,
-        onGenerateRoute: (settings) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _syncChrome(settings.name);
-          });
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => _pageFor(settings.name),
-          );
-        },
+      body: Column(
+        children: [
+          ConnectionStatusBanner(
+            state: connectionState,
+            onRetry: () => ref.read(socketServiceProvider).retryConnect(),
+          ),
+          Expanded(
+            child: Navigator(
+              key: _navigatorKey,
+              initialRoute: AppShellRoutes.home,
+              onGenerateRoute: (settings) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _syncChrome(settings.name);
+                });
+                return MaterialPageRoute(
+                  settings: settings,
+                  builder: (_) => _pageFor(settings.name),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,

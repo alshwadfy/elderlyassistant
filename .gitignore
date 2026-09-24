@@ -48,4 +48,4 @@ app.*.map.json
 # sessions, not project documentation. AGENTS.md and README.md are NOT
 # covered by this and stay tracked.
 # Documentation-related markdown files
-docs/*.md
+

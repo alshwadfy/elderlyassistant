@@ -1,30 +1,35 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../config/app_config.dart';
+import 'socket_event_models.dart';
 import 'socket_service.dart';
 
-/// Shared SocketService. Connection is opt-in until the backend URL is confirmed.
+/// Shared SocketService. Does not connect until SOCKET_URL is provided.
 final socketServiceProvider = Provider<SocketService>((ref) {
-  final service = SocketService();
+  final service = SocketService(serverUrl: AppConfig.socketUrl);
   ref.onDispose(service.dispose);
   return service;
 });
 
-/// StreamProvider for connection state changes
 final socketConnectionStateProvider =
     StreamProvider.autoDispose<SocketConnectionState>((ref) {
   final socketService = ref.watch(socketServiceProvider);
   return socketService.connectionStateStream;
 });
 
-/// StreamProvider for live elder status update event
 final elderStatusStreamProvider =
-    StreamProvider.autoDispose<Map<String, dynamic>>((ref) {
+    StreamProvider.autoDispose<ElderStatusUpdate>((ref) {
   final socketService = ref.watch(socketServiceProvider);
   return socketService.elderStatusStream;
 });
 
-/// StreamProvider for live alert triggered event
 final alertTriggeredStreamProvider =
-    StreamProvider.autoDispose<Map<String, dynamic>>((ref) {
+    StreamProvider.autoDispose<AlertTriggered>((ref) {
   final socketService = ref.watch(socketServiceProvider);
   return socketService.alertTriggeredStream;
+});
+
+final connectionAckStreamProvider =
+    StreamProvider.autoDispose<ConnectionAck>((ref) {
+  final socketService = ref.watch(socketServiceProvider);
+  return socketService.connectionAckStream;
 });

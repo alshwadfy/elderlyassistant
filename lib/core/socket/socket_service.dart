@@ -1,30 +1,51 @@
 import 'dart:async';
 import 'package:socket_io_client/socket_io_client.dart' as io;
+import '../utils/json_map.dart';
+import 'socket_event_models.dart';
 
-enum SocketConnectionState { connecting, connected, disconnected, reconnecting, error }
+enum SocketConnectionState {
+  idle,
+  connecting,
+  connected,
+  disconnected,
+  reconnecting,
+  error,
+}
 
 /// Shared Socket.io connection manager for real-time events.
 class SocketService {
-  SocketService({this.serverUrl = 'http://10.0.2.2:3000'});
+  SocketService({this.serverUrl = ''});
 
   final String serverUrl;
   io.Socket? _socket;
 
   final StreamController<SocketConnectionState> _connectionStateController =
       StreamController<SocketConnectionState>.broadcast();
-  final StreamController<Map<String, dynamic>> _elderStatusController =
-      StreamController<Map<String, dynamic>>.broadcast();
-  final StreamController<Map<String, dynamic>> _alertTriggeredController =
-      StreamController<Map<String, dynamic>>.broadcast();
+  final StreamController<ElderStatusUpdate> _elderStatusController =
+      StreamController<ElderStatusUpdate>.broadcast();
+  final StreamController<AlertTriggered> _alertTriggeredController =
+      StreamController<AlertTriggered>.broadcast();
+  final StreamController<ConnectionAck> _connectionAckController =
+      StreamController<ConnectionAck>.broadcast();
 
-  Stream<SocketConnectionState> get connectionStateStream => _connectionStateController.stream;
-  Stream<Map<String, dynamic>> get elderStatusStream => _elderStatusController.stream;
-  Stream<Map<String, dynamic>> get alertTriggeredStream => _alertTriggeredController.stream;
+  Stream<SocketConnectionState> get connectionStateStream =>
+      _connectionStateController.stream;
+  Stream<ElderStatusUpdate> get elderStatusStream =>
+      _elderStatusController.stream;
+  Stream<AlertTriggered> get alertTriggeredStream =>
+      _alertTriggeredController.stream;
+  Stream<ConnectionAck> get connectionAckStream =>
+      _connectionAckController.stream;
 
-  SocketConnectionState _currentState = SocketConnectionState.disconnected;
+  SocketConnectionState _currentState = SocketConnectionState.idle;
   SocketConnectionState get currentState => _currentState;
+  bool get isConfigured => serverUrl.isNotEmpty;
 
   void connect() {
+    if (!isConfigured) {
+      _updateState(SocketConnectionState.idle);
+      return;
+    }
     if (_socket != null && _socket!.connected) return;
 
     _updateState(SocketConnectionState.connecting);
@@ -60,17 +81,22 @@ class SocketService {
       _updateState(SocketConnectionState.error);
     });
 
-    // Contract events: elder_status_update & alert_triggered
+    _socket!.on('connection_ack', (data) {
+      final json = JsonMap.asStringKeyMap(data);
+      if (json == null) return;
+      _connectionAckController.add(ConnectionAck.fromJson(json));
+    });
+
     _socket!.on('elder_status_update', (data) {
-      if (data is Map) {
-        _elderStatusController.add(Map<String, dynamic>.from(data));
-      }
+      final json = JsonMap.asStringKeyMap(data);
+      if (json == null) return;
+      _elderStatusController.add(ElderStatusUpdate.fromJson(json));
     });
 
     _socket!.on('alert_triggered', (data) {
-      if (data is Map) {
-        _alertTriggeredController.add(Map<String, dynamic>.from(data));
-      }
+      final json = JsonMap.asStringKeyMap(data);
+      if (json == null) return;
+      _alertTriggeredController.add(AlertTriggered.fromJson(json));
     });
 
     _socket!.connect();
@@ -96,5 +122,6 @@ class SocketService {
     _connectionStateController.close();
     _elderStatusController.close();
     _alertTriggeredController.close();
+    _connectionAckController.close();
   }
 }
