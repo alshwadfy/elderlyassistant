@@ -74,6 +74,7 @@ class ConnectionStatusBanner extends StatelessWidget {
           icon: Icons.wifi_off,
           showRetry: true,
         ),
+      SocketConnectionState.idle ||
       SocketConnectionState.disconnected ||
       SocketConnectionState.connecting ||
       SocketConnectionState.connected =>
