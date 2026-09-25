@@ -157,6 +157,32 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.primaryContainer,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.navActive, size: 24);
+          }
+          return const IconThemeData(color: AppColors.navInactive, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.navActive,
+            );
+          }
+          return const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: AppColors.navInactive,
+          );
+        }),
+        elevation: 2,
+        surfaceTintColor: Colors.transparent,
+      ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.chipUnselected,
         selectedColor: AppColors.chipSelected,

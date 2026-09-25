@@ -25,7 +25,12 @@ void main() {
 
     expect(find.text('Meet Your Assistant'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Complete Setup & Go Home'));
+    await tester.scrollUntilVisible(
+      find.text('Complete Setup & Go Home'),
+      200.0,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Complete Setup & Go Home'));
     await tester.pumpAndSettle();
 

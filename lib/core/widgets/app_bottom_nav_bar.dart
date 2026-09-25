@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
@@ -19,8 +18,6 @@ class AppBottomNavBar extends StatelessWidget {
       selectedIndex: currentIndex,
       onDestinationSelected: onTap,
       height: 72,
-      backgroundColor: AppColors.surface,
-      indicatorColor: AppColors.primaryContainer,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: const [
         NavigationDestination(

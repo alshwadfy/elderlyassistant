@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/feature_card.dart';
 import '../screens/home_shell_screen.dart';
 
 class HomeTabView extends StatelessWidget {
