@@ -43,7 +43,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   const Text(
                     'Hello,',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
                     ),
                   ),

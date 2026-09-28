@@ -220,19 +220,24 @@ class _VoiceDoctorCard extends ConsumerWidget {
                       ),
                       Text(
                         doctor.type,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                       ),
                       Text(
                         '${doctor.distanceKm} km • ${doctor.estimatedMinutes} min',
                         style: const TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textMuted),
+                const Icon(Icons.chevron_right, color: AppColors.textSecondary),
               ],
             ),
             const SizedBox(height: 12),

@@ -60,7 +60,8 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                     Text(
                       'View and manage your upcoming appointments.',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                         color: AppColors.textSecondary,
                       ),
                     ),
@@ -75,6 +76,8 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.primary,
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             tabs: const [
               Tab(text: 'Upcoming'),
               Tab(text: 'Past'),
@@ -136,7 +139,7 @@ class _AppointmentList extends StatelessWidget {
       return const Center(
         child: Text(
           'No appointments here yet.',
-          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
         ),
       );
     }
@@ -147,56 +150,138 @@ class _AppointmentList extends StatelessWidget {
   }
 }
 
-class _AppointmentCard extends StatelessWidget {
+class _AppointmentCard extends ConsumerWidget {
   const _AppointmentCard({required this.appt});
 
   final AppointmentModel appt;
 
+  Future<void> _cancelAppointment(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cancel Appointment'),
+          content: Text(
+            'Are you sure you want to cancel your appointment with ${appt.doctorName}?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Keep Appointment'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.emergency),
+              child: const Text('Cancel Appointment'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      ref
+          .read(appointmentsProvider.notifier)
+          .cancelAppointment(appt.appointmentId);
+      if (context.mounted) {
+        showDemoSnackBar(
+          context,
+          'Appointment with ${appt.doctorName} cancelled',
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isCancelled = appt.status == 'Cancelled';
+    final isUpcoming = appt.status == 'Upcoming';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           children: [
-            const CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.primaryContainer,
-              child: Icon(Icons.person, color: AppColors.primary),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: isCancelled
+                      ? AppColors.emergencyContainer
+                      : AppColors.primaryContainer,
+                  child: Icon(
+                    isCancelled ? Icons.event_busy : Icons.person,
+                    color: isCancelled ? AppColors.emergency : AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              appt.doctorName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                decoration: isCancelled
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: isCancelled
+                                    ? AppColors.textSecondary
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          _AppointmentStatusBadge(status: appt.status),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        appt.doctorType,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _formatAppointment(appt.dateTime),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            if (isUpcoming) ...[
+              const Divider(height: 24, color: AppColors.divider),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    appt.doctorName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                  OutlinedButton.icon(
+                    onPressed: () => _cancelAppointment(context, ref),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(120, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      foregroundColor: AppColors.emergency,
+                      side: const BorderSide(color: AppColors.emergency, width: 1.5),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    appt.doctorType,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _formatAppointment(appt.dateTime),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                    ),
+                    icon: const Icon(Icons.cancel_outlined, size: 18),
+                    label: const Text('Cancel'),
                   ),
                 ],
               ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            ],
           ],
         ),
       ),
@@ -228,4 +313,35 @@ String _formatAppointment(DateTime dateTime) {
   final minute = dateTime.minute.toString().padLeft(2, '0');
   final period = dateTime.hour >= 12 ? 'PM' : 'AM';
   return '$weekday, $month ${dateTime.day}, ${dateTime.year}  •  $hour:$minute $period';
+}
+
+class _AppointmentStatusBadge extends StatelessWidget {
+  const _AppointmentStatusBadge({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, bgColor, textColor) = switch (status) {
+      'Upcoming' => ('Upcoming', AppColors.primaryContainer, AppColors.primary),
+      'Cancelled' => ('Cancelled', AppColors.emergencyContainer, AppColors.emergency),
+      _ => ('Past', AppColors.chipUnselected, AppColors.textSecondary),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: textColor,
+        ),
+      ),
+    );
+  }
 }

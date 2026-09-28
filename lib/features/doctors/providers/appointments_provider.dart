@@ -34,6 +34,20 @@ class AppointmentsNotifier extends StateNotifier<List<AppointmentModel>> {
   void addAppointment(AppointmentModel appointment) {
     state = [appointment, ...state];
   }
+
+  void cancelAppointment(String appointmentId) {
+    state = [
+      for (final appt in state)
+        if (appt.appointmentId == appointmentId)
+          appt.copyWith(status: 'Cancelled')
+        else
+          appt,
+    ];
+  }
+
+  void deleteAppointment(String appointmentId) {
+    state = state.where((a) => a.appointmentId != appointmentId).toList();
+  }
 }
 
 final appointmentsProvider = StateNotifierProvider<AppointmentsNotifier, List<AppointmentModel>>((ref) {

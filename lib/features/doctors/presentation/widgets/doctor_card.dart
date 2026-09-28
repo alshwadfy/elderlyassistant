@@ -41,6 +41,7 @@ class DoctorCard extends StatelessWidget {
                     doctor.type,
                     style: const TextStyle(
                       fontSize: 14,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -51,14 +52,22 @@ class DoctorCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '${doctor.distanceKm} km',
-                        style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      const Text('•', style: TextStyle(color: AppColors.textSecondary)),
+                      const Text('•', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 8),
                       Text(
                         '${doctor.estimatedMinutes} min',
-                        style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),

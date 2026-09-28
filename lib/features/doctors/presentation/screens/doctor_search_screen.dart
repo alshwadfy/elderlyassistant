@@ -37,18 +37,51 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
         .toList();
   }
 
-  void _book(DoctorModel doctor) {
+  Future<void> _book(DoctorModel doctor) async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 90)),
+      helpText: 'Select Appointment Date for ${doctor.name}',
+    );
+
+    if (pickedDate == null || !mounted) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 10, minute: 0),
+      helpText: 'Select Appointment Time',
+    );
+
+    if (pickedTime == null || !mounted) return;
+
+    final selectedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
     ref.read(appointmentsProvider.notifier).addAppointment(
           AppointmentModel(
             appointmentId: 'app_${DateTime.now().millisecondsSinceEpoch}',
             doctorId: doctor.providerId,
             doctorName: doctor.name,
             doctorType: doctor.type,
-            dateTime: DateTime.now().add(const Duration(days: 3, hours: 2)),
+            dateTime: selectedDateTime,
             status: 'Upcoming',
           ),
         );
-    showDemoSnackBar(context, 'Appointment booked with ${doctor.name} (demo)');
+
+    if (mounted) {
+      showDemoSnackBar(
+        context,
+        'Appointment booked with ${doctor.name} on ${pickedDate.day}/${pickedDate.month} at ${pickedTime.format(context)}',
+      );
+    }
   }
 
   @override
@@ -80,7 +113,8 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                     Text(
                       'Search for nearby doctors and book an appointment',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                         color: AppColors.textSecondary,
                       ),
                     ),

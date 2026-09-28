@@ -13,5 +13,23 @@ class AppointmentModel {
   final String doctorName;
   final String doctorType;
   final DateTime dateTime;
-  final String status; // 'Upcoming' or 'Past'
+  final String status; // 'Upcoming', 'Past', 'Cancelled'
+
+  AppointmentModel copyWith({
+    String? appointmentId,
+    String? doctorId,
+    String? doctorName,
+    String? doctorType,
+    DateTime? dateTime,
+    String? status,
+  }) {
+    return AppointmentModel(
+      appointmentId: appointmentId ?? this.appointmentId,
+      doctorId: doctorId ?? this.doctorId,
+      doctorName: doctorName ?? this.doctorName,
+      doctorType: doctorType ?? this.doctorType,
+      dateTime: dateTime ?? this.dateTime,
+      status: status ?? this.status,
+    );
+  }
 }

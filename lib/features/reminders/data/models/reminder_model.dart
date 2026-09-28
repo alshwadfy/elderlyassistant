@@ -7,6 +7,8 @@ class ReminderModel {
     required this.scheduledTime,
     required this.repeatPattern,
     required this.status,
+    this.completedAt,
+    this.durationDays,
   });
 
   final String reminderId;
@@ -15,7 +17,9 @@ class ReminderModel {
   final String title;
   final DateTime scheduledTime;
   final String repeatPattern;
-  final String status; // 'pending', 'completed', 'missed'
+  final String status; // 'pending', 'completed', 'missed', 'skipped'
+  final DateTime? completedAt;
+  final int? durationDays;
 
   factory ReminderModel.fromJson(Map<String, dynamic> json) {
     return ReminderModel(
@@ -28,6 +32,10 @@ class ReminderModel {
           : DateTime.now(),
       repeatPattern: json['repeat_pattern'] ?? 'daily',
       status: json['status'] ?? 'pending',
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'])
+          : null,
+      durationDays: json['duration_days'],
     );
   }
 
@@ -40,20 +48,32 @@ class ReminderModel {
       'scheduled_time': scheduledTime.toIso8601String(),
       'repeat_pattern': repeatPattern,
       'status': status,
+      'completed_at': completedAt?.toIso8601String(),
+      'duration_days': durationDays,
     };
   }
 
   ReminderModel copyWith({
+    String? reminderId,
+    String? userId,
+    String? type,
+    String? title,
+    DateTime? scheduledTime,
+    String? repeatPattern,
     String? status,
+    DateTime? completedAt,
+    int? durationDays,
   }) {
     return ReminderModel(
-      reminderId: reminderId,
-      userId: userId,
-      type: type,
-      title: title,
-      scheduledTime: scheduledTime,
-      repeatPattern: repeatPattern,
+      reminderId: reminderId ?? this.reminderId,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      scheduledTime: scheduledTime ?? this.scheduledTime,
+      repeatPattern: repeatPattern ?? this.repeatPattern,
       status: status ?? this.status,
+      completedAt: completedAt ?? this.completedAt,
+      durationDays: durationDays ?? this.durationDays,
     );
   }
 }

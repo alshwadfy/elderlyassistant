@@ -56,6 +56,100 @@ class RemindersScreen extends ConsumerWidget {
     titleController.dispose();
   }
 
+  Future<void> _editReminder(
+      BuildContext context, WidgetRef ref, ReminderModel reminder) async {
+    final titleController = TextEditingController(text: reminder.title);
+    final patternController =
+        TextEditingController(text: reminder.repeatPattern);
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Reminder'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Reminder Title',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: patternController,
+                decoration: const InputDecoration(
+                  labelText: 'Instructions / Repeat Pattern',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (saved == true && titleController.text.trim().isNotEmpty) {
+      ref.read(remindersProvider.notifier).updateReminder(
+            reminder.copyWith(
+              title: titleController.text.trim(),
+              repeatPattern: patternController.text.trim().isEmpty
+                  ? reminder.repeatPattern
+                  : patternController.text.trim(),
+            ),
+          );
+      if (context.mounted) {
+        showDemoSnackBar(context, 'Reminder updated');
+      }
+    }
+    titleController.dispose();
+    patternController.dispose();
+  }
+
+  Future<void> _deleteReminder(
+      BuildContext context, WidgetRef ref, ReminderModel reminder) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Reminder'),
+          content: Text('Are you sure you want to delete "${reminder.title}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.emergency),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      ref
+          .read(remindersProvider.notifier)
+          .deleteReminder(reminder.reminderId);
+      if (context.mounted) {
+        showDemoSnackBar(context, 'Reminder deleted');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reminders = ref.watch(remindersProvider);
@@ -95,6 +189,7 @@ class RemindersScreen extends ConsumerWidget {
             'Today, 23 September\nHere are your upcoming medications:',
             style: TextStyle(
               fontSize: 16,
+              fontWeight: FontWeight.w500,
               color: AppColors.textSecondary,
               height: 1.5,
             ),
@@ -140,6 +235,8 @@ class RemindersScreen extends ConsumerWidget {
                         .read(remindersProvider.notifier)
                         .toggleStatus(reminder.reminderId);
                   },
+                  onEdit: () => _editReminder(context, ref, reminder),
+                  onDelete: () => _deleteReminder(context, ref, reminder),
                 );
               },
             ),

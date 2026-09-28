@@ -4,8 +4,48 @@ import '../../../../core/widgets/accessible_button.dart';
 import '../../../../core/widgets/demo_snackbar.dart';
 import '../../../home/presentation/screens/home_shell_screen.dart';
 
-class EmergencyScreen extends StatelessWidget {
+class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
+
+  @override
+  State<EmergencyScreen> createState() => _EmergencyScreenState();
+}
+
+class _EmergencyScreenState extends State<EmergencyScreen> {
+  bool _isAlertActive = false;
+  DateTime? _triggeredAt;
+
+  void _triggerEmergency() {
+    final now = DateTime.now();
+    setState(() {
+      _isAlertActive = true;
+      _triggeredAt = now;
+    });
+
+    // Construct trigger payload matching emergency_event.triggered_at backend schema
+    final payload = {
+      'emergency_event': {
+        'triggered_at': now.toIso8601String(),
+        'status': 'triggered',
+      }
+    };
+
+    final timeStr =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    showDemoSnackBar(
+      context,
+      'SOS alert dispatched at $timeStr (${payload['emergency_event']!['triggered_at']})',
+    );
+  }
+
+  void _cancelEmergency() {
+    setState(() {
+      _isAlertActive = false;
+      _triggeredAt = null;
+    });
+    showDemoSnackBar(context, 'Emergency alert cancelled');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +81,52 @@ class EmergencyScreen extends StatelessWidget {
                   const SizedBox(width: 48),
                 ],
               ),
+              if (_isAlertActive && _triggeredAt != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.successContainer,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.success, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline,
+                        color: AppColors.success,
+                        size: 32,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Help is on the way!',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.success,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Alert sent at ${_triggeredAt!.hour.toString().padLeft(2, '0')}:${_triggeredAt!.minute.toString().padLeft(2, '0')}. Your family and caregivers have been notified.',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               Container(
                 width: 180,
@@ -65,8 +151,8 @@ class EmergencyScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                           color: AppColors.emergency,
                         ),
-                        child: const Icon(
-                          Icons.phone_in_talk,
+                        child: Icon(
+                          _isAlertActive ? Icons.notifications_active : Icons.phone_in_talk,
                           size: 48,
                           color: AppColors.textLight,
                         ),
@@ -76,34 +162,45 @@ class EmergencyScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Emergency Help',
-                style: TextStyle(
+              Text(
+                _isAlertActive ? 'Alert Dispatched' : 'Emergency Help',
+                style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: AppColors.emergency,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Need immediate assistance?\nYou will be connected with your family or emergency services.',
+              Text(
+                _isAlertActive
+                    ? 'Stay calm. Your caregivers have received your location and contact request.'
+                    : 'Need immediate assistance?\nYou will be connected with your family or emergency services.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                   height: 1.4,
                 ),
               ),
               const Spacer(),
-              AccessibleButton(
-                label: 'Call Emergency',
-                semanticLabel: 'Call emergency services',
-                icon: Icons.phone,
-                backgroundColor: AppColors.emergency,
-                onPressed: () {
-                  showDemoSnackBar(context, 'Calling emergency services (demo)');
-                },
-              ),
+              if (_isAlertActive) ...[
+                AccessibleButton(
+                  label: 'Cancel Emergency Alert',
+                  semanticLabel: 'Cancel emergency alert',
+                  icon: Icons.close,
+                  backgroundColor: AppColors.textMuted,
+                  onPressed: _cancelEmergency,
+                ),
+              ] else ...[
+                AccessibleButton(
+                  label: 'Call Emergency',
+                  semanticLabel: 'Call emergency services',
+                  icon: Icons.phone,
+                  backgroundColor: AppColors.emergency,
+                  onPressed: _triggerEmergency,
+                ),
+              ],
               const SizedBox(height: 16),
               SizedBox(
                 height: 56,
