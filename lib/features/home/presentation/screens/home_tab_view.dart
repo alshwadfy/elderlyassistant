@@ -100,12 +100,7 @@ class HomeTabView extends StatelessWidget {
                 icon: Icons.medication_outlined,
                 title: 'Medication Reminders',
                 subtitle: 'Never miss your medication',
-                onTap: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppShellRoutes.reminders,
-                    (route) => false,
-                  );
-                },
+                onTap: () => _open(context, AppShellRoutes.reminders),
               ),
               _FeatureCard(
                 icon: Icons.people_outline,

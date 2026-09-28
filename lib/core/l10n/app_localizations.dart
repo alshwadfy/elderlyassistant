@@ -181,6 +181,28 @@ class AppLocalizations {
   String get markPending => _t('markPending');
   String get todayReminders => _t('todayReminders');
 
+  // Elderly UX Reminders & Medications
+  String get takeMedicine => _t('takeMedicine');
+  String get medicineTaken => _t('medicineTaken');
+  String get skipForNow => _t('skipForNow');
+  String get dosageLabel => _t('dosageLabel');
+  String get instructionsLabel => _t('instructionsLabel');
+  String get durationLabel => _t('durationLabel');
+  String get daysRemainingLabel => _t('daysRemainingLabel');
+  String get ongoingTreatment => _t('ongoingTreatment');
+  String get allReminders => _t('allReminders');
+  String get morning => _t('morning');
+  String get afternoon => _t('afternoon');
+  String get evening => _t('evening');
+  String get night => _t('night');
+  String get scheduledTime => _t('scheduledTime');
+
+  String dayProgressText(int day, int total) =>
+      _languageCode == 'ar' ? 'اليوم $day من $total' : 'Day $day of $total';
+
+  String daysRemainingBadge(int days) =>
+      _languageCode == 'ar' ? 'متبقي $days أيام' : '$days days left';
+
   // ─── Voice Assistant ───
   String get listening => _t('listening');
   String get processing => _t('processing');
@@ -391,6 +413,20 @@ class AppLocalizations {
     'markCompleted': 'Mark as completed',
     'markPending': 'Mark as pending',
     'todayReminders': 'Today, 23 September\nHere are your upcoming medications:',
+    'takeMedicine': 'TAKE MEDICINE',
+    'medicineTaken': 'Medicine Taken',
+    'skipForNow': 'Skip',
+    'dosageLabel': 'Dosage',
+    'instructionsLabel': 'Instructions',
+    'durationLabel': 'Treatment Duration',
+    'daysRemainingLabel': 'Days Remaining',
+    'ongoingTreatment': 'Ongoing Daily Treatment',
+    'allReminders': 'All',
+    'morning': 'Morning',
+    'afternoon': 'Afternoon',
+    'evening': 'Evening',
+    'night': 'Night',
+    'scheduledTime': 'Scheduled Time',
 
     // Voice
     'listening': 'Listening...',
@@ -564,6 +600,20 @@ class AppLocalizations {
     'markCompleted': 'وضع علامة مكتمل',
     'markPending': 'وضع علامة قيد الانتظار',
     'todayReminders': 'اليوم، 23 سبتمبر\nإليك أدويتك القادمة:',
+    'takeMedicine': 'تناول الدواء الآن',
+    'medicineTaken': 'تم تناول الدواء',
+    'skipForNow': 'تخطي',
+    'dosageLabel': 'الجرعة',
+    'instructionsLabel': 'التعليمات',
+    'durationLabel': 'مدة العلاج',
+    'daysRemainingLabel': 'الأيام المتبقية',
+    'ongoingTreatment': 'علاج يومي مستمر',
+    'allReminders': 'الكل',
+    'morning': 'صباحاً',
+    'afternoon': 'ظهراً',
+    'evening': 'مساءً',
+    'night': 'ليلاً',
+    'scheduledTime': 'وقت التذكير',
 
     // Voice
     'listening': 'جارٍ الاستماع...',

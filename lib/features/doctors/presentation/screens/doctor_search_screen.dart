@@ -93,11 +93,21 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              _TitleIcon(icon: Icons.person_outline),
-              SizedBox(width: 16),
-              Expanded(
+              IconButton(
+                icon: const Icon(Icons.arrow_back, size: 28),
+                tooltip: 'Back',
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              const _TitleIcon(icon: Icons.person_outline),
+              const SizedBox(width: 12),
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -106,7 +116,6 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 4),
@@ -115,7 +124,6 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],

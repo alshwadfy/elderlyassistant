@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/demo_snackbar.dart';
-import '../../data/models/emergency_contact_model.dart';
-import '../../providers/family_provider.dart';
-
 import '../../data/models/caregiver_request_model.dart';
+import '../../data/models/emergency_contact_model.dart';
 import '../../providers/caregiver_requests_provider.dart';
+import '../../providers/family_provider.dart';
 
 class FamilyCircleScreen extends ConsumerStatefulWidget {
   const FamilyCircleScreen({super.key});
@@ -22,7 +22,7 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -33,19 +33,22 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final contacts = ref.watch(familyProvider);
     final caregiverRequests = ref.watch(caregiverRequestsProvider);
     final pendingCount =
         caregiverRequests.where((r) => r.status == 'pending').length;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         children: [
+          // ─── Header: Back button + Title (No + button as requested) ───
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back, size: 28),
                 tooltip: 'Back',
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
@@ -53,88 +56,96 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
                   }
                 },
               ),
-              const Expanded(
-                child: Text(
-                  'Family Circle',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add, color: AppColors.primary),
-                tooltip: 'Add family member',
-                onPressed: () {
-                  showDemoSnackBar(context, 'Add contact will use the API later');
-                },
-              ),
-            ],
-          ),
-          TabBar(
-            controller: _tabController,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.primary,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-            tabs: [
-              const Tab(text: 'Contacts'),
-              Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Requests'),
-                    if (pendingCount > 0) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.emergency,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '$pendingCount',
-                          style: const TextStyle(
-                            color: AppColors.textLight,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    Text(
+                      l10n.familyCircle,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
+                    ),
+                    Text(
+                      'Connected family caregivers & access requests',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Tab(text: 'Recent'),
             ],
           ),
+          const SizedBox(height: 16),
+
+          // ─── Tabs: Family Contacts & Caregiver Requests ───
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.all(4),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              tabs: [
+                Tab(text: l10n.contacts),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(l10n.requests),
+                      if (pendingCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.emergency,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$pendingCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
+                // Family Contacts List
                 ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: contacts.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(color: AppColors.divider),
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    return _ContactTile(contact: contacts[index]);
+                    return _ContactCard(contact: contacts[index]);
                   },
                 ),
+                // Caregiver Requests List
                 _CaregiverRequestsList(requests: caregiverRequests),
-                const Center(
-                  child: Text(
-                    'No recent calls',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -144,67 +155,89 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
   }
 }
 
-class _ContactTile extends StatelessWidget {
-  const _ContactTile({required this.contact});
+class _ContactCard extends StatelessWidget {
+  const _ContactCard({required this.contact});
 
   final EmergencyContactModel contact;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppColors.primaryContainer,
-            child: Text(
-              contact.name.isNotEmpty ? contact.name[0] : '?',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: AppColors.primaryContainer,
+              child: Text(
+                contact.name.isNotEmpty ? contact.name[0] : '?',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  color: AppColors.primary,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${contact.relation} – ${contact.name}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        contact.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          contact.relation,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  contact.phone,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                  const SizedBox(height: 4),
+                  Text(
+                    contact.phone,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            tooltip: 'Call ${contact.name}',
-            icon: const Icon(Icons.call_outlined, color: AppColors.primary),
-            onPressed: () {
-              showDemoSnackBar(context, 'Calling ${contact.name} (demo)');
-            },
-          ),
-          IconButton(
-            tooltip: 'Message ${contact.name}',
-            icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
-            onPressed: () {
-              showDemoSnackBar(context, 'Message ${contact.name} (demo)');
-            },
-          ),
-        ],
+            IconButton.filledTonal(
+              tooltip: 'Call ${contact.name}',
+              icon: const Icon(Icons.call_outlined, color: AppColors.primary, size: 24),
+              onPressed: () {
+                showDemoSnackBar(context, 'Calling ${contact.name} (${contact.phone})');
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -217,12 +250,15 @@ class _CaregiverRequestsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
     if (requests.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'No pending caregiver access requests',
+          l10n.noPendingRequests,
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -231,7 +267,6 @@ class _CaregiverRequestsList extends ConsumerWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: requests.length,
       itemBuilder: (context, index) {
         final req = requests[index];
@@ -248,11 +283,17 @@ class _CaregiverRequestCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final isPending = req.status == 'pending';
     final isApproved = req.status == 'approved';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -261,22 +302,23 @@ class _CaregiverRequestCard extends ConsumerWidget {
             Row(
               children: [
                 CircleAvatar(
-                  radius: 22,
+                  radius: 24,
                   backgroundColor: isApproved
                       ? AppColors.successContainer
                       : req.status == 'declined'
                           ? AppColors.emergencyContainer
                           : AppColors.primaryContainer,
                   child: Icon(
-                    Icons.medical_services_outlined,
+                    Icons.family_restroom,
                     color: isApproved
                         ? AppColors.success
                         : req.status == 'declined'
                             ? AppColors.emergency
                             : AppColors.primary,
+                    size: 26,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,17 +326,17 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       Text(
                         req.caregiverName,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         '${req.role} • ${req.phone}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -302,29 +344,24 @@ class _CaregiverRequestCard extends ConsumerWidget {
                 ),
                 if (!isPending)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isApproved
-                          ? AppColors.successContainer
-                          : AppColors.emergencyContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      color: isApproved ? AppColors.successContainer : AppColors.emergencyContainer,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      isApproved ? 'Approved' : 'Declined',
+                      isApproved ? l10n.approved : l10n.declined,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: isApproved
-                            ? AppColors.success
-                            : AppColors.emergency,
+                        color: isApproved ? AppColors.success : AppColors.emergency,
                       ),
                     ),
                   ),
               ],
             ),
             if (isPending) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
@@ -341,9 +378,12 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 48),
                         foregroundColor: AppColors.emergency,
-                        side: const BorderSide(color: AppColors.emergency),
+                        side: const BorderSide(color: AppColors.emergency, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Decline'),
+                      child: Text(l10n.decline, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -361,8 +401,12 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(0, 48),
                         backgroundColor: AppColors.success,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Approve'),
+                      child: Text(l10n.approve, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

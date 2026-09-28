@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/accessible_button.dart';
 import '../../../../core/widgets/demo_snackbar.dart';
-import '../../../home/presentation/screens/home_shell_screen.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -22,20 +22,12 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       _triggeredAt = now;
     });
 
-    // Construct trigger payload matching emergency_event.triggered_at backend schema
-    final payload = {
-      'emergency_event': {
-        'triggered_at': now.toIso8601String(),
-        'status': 'triggered',
-      }
-    };
-
     final timeStr =
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     showDemoSnackBar(
       context,
-      'SOS alert dispatched at $timeStr (${payload['emergency_event']!['triggered_at']})',
+      'SOS alert dispatched at $timeStr to all family members & caregivers!',
     );
   }
 
@@ -49,32 +41,42 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
     return ColoredBox(
-      color: AppColors.emergencyBg,
+      color: theme.brightness == Brightness.dark
+          ? const Color(0xFF1E1010)
+          : AppColors.emergencyBg,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Column(
             children: [
+              // Top Header with Back Button
               Row(
                 children: [
                   IconButton(
                     tooltip: 'Back',
-                    icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      size: 28,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     onPressed: () {
                       if (Navigator.of(context).canPop()) {
                         Navigator.of(context).pop();
                       }
                     },
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Emergency Help',
+                      l10n.emergencyHelpTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -82,7 +84,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 ],
               ),
               if (_isAlertActive && _triggeredAt != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -103,9 +105,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Help is on the way!',
-                              style: TextStyle(
+                            Text(
+                              l10n.helpOnWay,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.success,
@@ -113,7 +115,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Alert sent at ${_triggeredAt!.hour.toString().padLeft(2, '0')}:${_triggeredAt!.minute.toString().padLeft(2, '0')}. Your family and caregivers have been notified.',
+                              l10n.alertSentAt(
+                                '${_triggeredAt!.hour.toString().padLeft(2, '0')}:${_triggeredAt!.minute.toString().padLeft(2, '0')}',
+                              ),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -128,32 +132,34 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 ),
               ],
               const Spacer(),
+
+              // SOS Button Animation Circle
               Container(
-                width: 180,
-                height: 180,
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.emergency.withValues(alpha: 0.1),
                 ),
                 child: Center(
                   child: Container(
-                    width: 140,
-                    height: 140,
+                    width: 155,
+                    height: 155,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.emergency.withValues(alpha: 0.2),
                     ),
                     child: Center(
                       child: Container(
-                        width: 100,
-                        height: 100,
+                        width: 110,
+                        height: 110,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: AppColors.emergency,
                         ),
                         child: Icon(
                           _isAlertActive ? Icons.notifications_active : Icons.phone_in_talk,
-                          size: 48,
+                          size: 52,
                           color: AppColors.textLight,
                         ),
                       ),
@@ -163,7 +169,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               ),
               const SizedBox(height: 32),
               Text(
-                _isAlertActive ? 'Alert Dispatched' : 'Emergency Help',
+                _isAlertActive ? l10n.alertDispatched : l10n.emergencyHelpTitle,
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -172,21 +178,21 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                _isAlertActive
-                    ? 'Stay calm. Your caregivers have received your location and contact request.'
-                    : 'Need immediate assistance?\nYou will be connected with your family or emergency services.',
+                _isAlertActive ? l10n.stayCalm : l10n.needAssistance,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                   height: 1.4,
                 ),
               ),
               const Spacer(),
+
+              // Primary SOS Call Button
               if (_isAlertActive) ...[
                 AccessibleButton(
-                  label: 'Cancel Emergency Alert',
+                  label: l10n.cancelEmergencyAlert,
                   semanticLabel: 'Cancel emergency alert',
                   icon: Icons.close,
                   backgroundColor: AppColors.textMuted,
@@ -194,39 +200,14 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 ),
               ] else ...[
                 AccessibleButton(
-                  label: 'Call Emergency',
+                  label: l10n.callEmergency,
                   semanticLabel: 'Call emergency services',
-                  icon: Icons.phone,
+                  icon: Icons.phone_in_talk,
                   backgroundColor: AppColors.emergency,
                   onPressed: _triggerEmergency,
                 ),
               ],
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 56,
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(AppShellRoutes.family);
-                  },
-                  icon: const Icon(Icons.people_outline, color: AppColors.emergency),
-                  label: const Text(
-                    'Contact Family',
-                    style: TextStyle(
-                      color: AppColors.emergency,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.emergency, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
             ],
           ),
         ),

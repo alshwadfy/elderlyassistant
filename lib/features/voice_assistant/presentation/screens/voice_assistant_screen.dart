@@ -49,6 +49,34 @@ class _VoiceAssistantScreenState extends ConsumerState<VoiceAssistantScreen> {
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 4, 16, 4),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, size: 28),
+                tooltip: 'Back',
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+              const SizedBox(width: 4),
+              const CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.primaryContainer,
+                child: Icon(Icons.smart_toy_outlined, color: AppColors.primary, size: 22),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'AI Voice Companion',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
         Expanded(
           child: ListView.builder(
             controller: _scrollController,

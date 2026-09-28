@@ -9,6 +9,9 @@ class ReminderModel {
     required this.status,
     this.completedAt,
     this.durationDays,
+    this.dosage,
+    this.instructions,
+    this.startDate,
   });
 
   final String reminderId;
@@ -20,6 +23,29 @@ class ReminderModel {
   final String status; // 'pending', 'completed', 'missed', 'skipped'
   final DateTime? completedAt;
   final int? durationDays;
+  final String? dosage; // e.g. '1 Tablet', '2 Capsules'
+  final String? instructions; // e.g. 'Take after breakfast with water'
+  final DateTime? startDate; // Start date of treatment course
+
+  int get currentDay {
+    if (startDate == null) return 1;
+    final diff = DateTime.now().difference(startDate!).inDays + 1;
+    if (diff < 1) return 1;
+    if (durationDays != null && diff > durationDays!) return durationDays!;
+    return diff;
+  }
+
+  int? get daysRemaining {
+    if (durationDays == null) return null;
+    final remaining = durationDays! - currentDay + 1;
+    return remaining < 0 ? 0 : remaining;
+  }
+
+  double get progressRatio {
+    if (durationDays == null || durationDays == 0) return 1.0;
+    final ratio = currentDay / durationDays!;
+    return ratio > 1.0 ? 1.0 : (ratio < 0.0 ? 0.0 : ratio);
+  }
 
   factory ReminderModel.fromJson(Map<String, dynamic> json) {
     return ReminderModel(
@@ -36,6 +62,11 @@ class ReminderModel {
           ? DateTime.parse(json['completed_at'])
           : null,
       durationDays: json['duration_days'],
+      dosage: json['dosage'],
+      instructions: json['instructions'],
+      startDate: json['start_date'] != null
+          ? DateTime.parse(json['start_date'])
+          : null,
     );
   }
 
@@ -50,6 +81,9 @@ class ReminderModel {
       'status': status,
       'completed_at': completedAt?.toIso8601String(),
       'duration_days': durationDays,
+      'dosage': dosage,
+      'instructions': instructions,
+      'start_date': startDate?.toIso8601String(),
     };
   }
 
@@ -63,6 +97,9 @@ class ReminderModel {
     String? status,
     DateTime? completedAt,
     int? durationDays,
+    String? dosage,
+    String? instructions,
+    DateTime? startDate,
   }) {
     return ReminderModel(
       reminderId: reminderId ?? this.reminderId,
@@ -74,6 +111,9 @@ class ReminderModel {
       status: status ?? this.status,
       completedAt: completedAt ?? this.completedAt,
       durationDays: durationDays ?? this.durationDays,
+      dosage: dosage ?? this.dosage,
+      instructions: instructions ?? this.instructions,
+      startDate: startDate ?? this.startDate,
     );
   }
 }
