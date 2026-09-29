@@ -11,9 +11,26 @@ class EmergencyScreen extends StatefulWidget {
   State<EmergencyScreen> createState() => _EmergencyScreenState();
 }
 
-class _EmergencyScreenState extends State<EmergencyScreen> {
+class _EmergencyScreenState extends State<EmergencyScreen>
+    with SingleTickerProviderStateMixin {
   bool _isAlertActive = false;
   DateTime? _triggeredAt;
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   void _triggerEmergency() {
     final now = DateTime.now();
@@ -43,14 +60,13 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return ColoredBox(
-      color: theme.brightness == Brightness.dark
-          ? const Color(0xFF1E1010)
-          : AppColors.emergencyBg,
+      color: isDark ? const Color(0xFF1E1010) : AppColors.emergencyBg,
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Column(
             children: [
               // Top Header with Back Button
@@ -59,7 +75,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   IconButton(
                     tooltip: 'Back',
                     icon: Icon(
-                      Icons.arrow_back,
+                      Icons.arrow_back_rounded,
                       size: 28,
                       color: theme.colorScheme.onSurface,
                     ),
@@ -74,33 +90,49 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       l10n.emergencyHelpTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
                         color: theme.colorScheme.onSurface,
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ),
                   const SizedBox(width: 48),
                 ],
               ),
+
               if (_isAlertActive && _triggeredAt != null) ...[
                 const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppColors.successContainer,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.success, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.success.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.check_circle_outline,
-                        color: AppColors.success,
-                        size: 32,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: AppColors.success,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,18 +141,18 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                               l10n.helpOnWay,
                               style: const TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                                 color: AppColors.success,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
                               l10n.alertSentAt(
                                 '${_triggeredAt!.hour.toString().padLeft(2, '0')}:${_triggeredAt!.minute.toString().padLeft(2, '0')}',
                               ),
                               style: const TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -131,70 +163,101 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   ),
                 ),
               ],
+
               const Spacer(),
 
-              // SOS Button Animation Circle
-              Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.emergency.withValues(alpha: 0.1),
-                ),
-                child: Center(
+              // SOS Animated Pulse Button
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  final scale = 1.0 + (_pulseController.value * 0.08);
+                  return Transform.scale(
+                    scale: scale,
+                    child: child,
+                  );
+                },
+                child: GestureDetector(
+                  onTap: _isAlertActive ? _cancelEmergency : _triggerEmergency,
                   child: Container(
-                    width: 155,
-                    height: 155,
+                    width: 220,
+                    height: 220,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.emergency.withValues(alpha: 0.2),
+                      color: AppColors.emergency.withValues(alpha: 0.12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.emergency.withValues(alpha: 0.35),
+                          blurRadius: 40,
+                          spreadRadius: 10,
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Container(
-                        width: 110,
-                        height: 110,
-                        decoration: const BoxDecoration(
+                        width: 170,
+                        height: 170,
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.emergency,
+                          color: AppColors.emergency.withValues(alpha: 0.25),
                         ),
-                        child: Icon(
-                          _isAlertActive ? Icons.notifications_active : Icons.phone_in_talk,
-                          size: 52,
-                          color: AppColors.textLight,
+                        child: Center(
+                          child: Container(
+                            width: 125,
+                            height: 125,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFFF6B6B), Color(0xFFE53E3E)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Icon(
+                              _isAlertActive
+                                  ? Icons.notifications_active_rounded
+                                  : Icons.phone_in_talk_rounded,
+                              size: 58,
+                              color: AppColors.textLight,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+
+              const SizedBox(height: 36),
+
               Text(
                 _isAlertActive ? l10n.alertDispatched : l10n.emergencyHelpTitle,
                 style: const TextStyle(
                   fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                   color: AppColors.emergency,
+                  letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 _isAlertActive ? l10n.stayCalm : l10n.needAssistance,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
                   height: 1.4,
                 ),
               ),
+
               const Spacer(),
 
-              // Primary SOS Call Button
+              // Primary SOS Action Button
               if (_isAlertActive) ...[
                 AccessibleButton(
                   label: l10n.cancelEmergencyAlert,
                   semanticLabel: 'Cancel emergency alert',
-                  icon: Icons.close,
+                  icon: Icons.close_rounded,
                   backgroundColor: AppColors.textMuted,
                   onPressed: _cancelEmergency,
                 ),
@@ -202,7 +265,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 AccessibleButton(
                   label: l10n.callEmergency,
                   semanticLabel: 'Call emergency services',
-                  icon: Icons.phone_in_talk,
+                  icon: Icons.phone_in_talk_rounded,
                   backgroundColor: AppColors.emergency,
                   onPressed: _triggerEmergency,
                 ),
@@ -215,3 +278,4 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     );
   }
 }
+

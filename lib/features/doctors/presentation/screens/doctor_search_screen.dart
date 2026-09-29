@@ -89,14 +89,14 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
     final doctors = _visible(ref.watch(doctorsProvider));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, size: 28),
+                icon: const Icon(Icons.arrow_back_rounded, size: 28),
                 tooltip: 'Back',
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
@@ -105,8 +105,8 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                 },
               ),
               const SizedBox(width: 8),
-              const _TitleIcon(icon: Icons.person_outline),
-              const SizedBox(width: 12),
+              const _TitleIcon(icon: Icons.person_search_rounded),
+              const SizedBox(width: 14),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,15 +115,17 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                       'Find a Doctor',
                       style: TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 2),
                     Text(
                       'Search for nearby doctors and book an appointment',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -134,12 +136,19 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
           const SizedBox(height: 20),
           TextField(
             onChanged: (value) => setState(() => _query = value),
-            decoration: const InputDecoration(
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            decoration: InputDecoration(
               hintText: 'Search by speciality (e.g. cardiologist)',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search_rounded, size: 24),
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -158,8 +167,15 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                         color: isSelected
                             ? AppColors.textLight
                             : AppColors.chipTextUnselected,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
                       ),
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.chipUnselected,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       onSelected: (selected) {
                         if (!selected) return;
                         setState(() => _selectedFilter = filter);
@@ -171,7 +187,7 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
               }).toList(),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Expanded(
             child: doctors.isEmpty
                 ? const Center(

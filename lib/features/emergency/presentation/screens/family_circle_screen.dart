@@ -35,6 +35,8 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final contacts = ref.watch(familyProvider);
     final caregiverRequests = ref.watch(caregiverRequestsProvider);
     final pendingCount =
@@ -44,11 +46,11 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         children: [
-          // ─── Header: Back button + Title (No + button as requested) ───
+          // ─── Header: Back button + Title ───
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, size: 28),
+                icon: const Icon(Icons.arrow_back_rounded, size: 28),
                 tooltip: 'Back',
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
@@ -63,16 +65,19 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
                   children: [
                     Text(
                       l10n.familyCircle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     Text(
                       'Connected family caregivers & access requests',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -80,25 +85,34 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // ─── Tabs: Family Contacts & Caregiver Requests ───
+          // ─── Tabs ───
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(16),
+              color: isDark ? AppColorsDark.surface : AppColors.chipUnselected,
+              borderRadius: BorderRadius.circular(20),
             ),
             padding: const EdgeInsets.all(4),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
+                color: isDark ? AppColorsDark.primary : AppColors.primary,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               labelColor: Colors.white,
-              unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              unselectedLabelColor: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
               tabs: [
                 Tab(text: l10n.contacts),
                 Tab(
@@ -130,7 +144,7 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           Expanded(
             child: TabBarView(
@@ -139,7 +153,7 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
                 // Family Contacts List
                 ListView.separated(
                   itemCount: contacts.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) => const SizedBox(height: 14),
                   itemBuilder: (context, index) {
                     return _ContactCard(contact: contacts[index]);
                   },
@@ -163,27 +177,56 @@ class _ContactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark ? AppColorsDark.border : AppColors.border,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: AppColors.primaryContainer,
-              child: Text(
-                contact.name.isNotEmpty ? contact.name[0] : '?',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  color: AppColors.primary,
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: AppColors.primaryContainer,
+                  child: Text(
+                    contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 22,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -192,25 +235,29 @@ class _ContactCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        contact.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                      Flexible(
+                        child: Text(
+                          contact.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                            color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           contact.relation,
                           style: const TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                           ),
                         ),
@@ -221,7 +268,7 @@ class _ContactCard extends StatelessWidget {
                   Text(
                     contact.phone,
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -231,7 +278,11 @@ class _ContactCard extends StatelessWidget {
             ),
             IconButton.filledTonal(
               tooltip: 'Call ${contact.name}',
-              icon: const Icon(Icons.call_outlined, color: AppColors.primary, size: 24),
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primaryContainer,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              icon: const Icon(Icons.call_rounded, color: AppColors.primary, size: 24),
               onPressed: () {
                 showDemoSnackBar(context, 'Calling ${contact.name} (${contact.phone})');
               },
@@ -252,15 +303,16 @@ class _CaregiverRequestsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     if (requests.isEmpty) {
       return Center(
         child: Text(
           l10n.noPendingRequests,
           style: TextStyle(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: isDark ? AppColorsDark.textMuted : AppColors.textMuted,
             fontSize: 16,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       );
@@ -285,37 +337,50 @@ class _CaregiverRequestCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final isPending = req.status == 'pending';
     final isApproved = req.status == 'approved';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark ? AppColorsDark.border : AppColors.border,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 CircleAvatar(
-                  radius: 24,
+                  radius: 26,
                   backgroundColor: isApproved
                       ? AppColors.successContainer
                       : req.status == 'declined'
                           ? AppColors.emergencyContainer
                           : AppColors.primaryContainer,
                   child: Icon(
-                    Icons.family_restroom,
+                    Icons.family_restroom_rounded,
                     color: isApproved
                         ? AppColors.success
                         : req.status == 'declined'
                             ? AppColors.emergency
                             : AppColors.primary,
-                    size: 26,
+                    size: 28,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -325,9 +390,10 @@ class _CaregiverRequestCard extends ConsumerWidget {
                     children: [
                       Text(
                         req.caregiverName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -336,7 +402,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -344,10 +410,10 @@ class _CaregiverRequestCard extends ConsumerWidget {
                 ),
                 if (!isPending)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: isApproved ? AppColors.successContainer : AppColors.emergencyContainer,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       isApproved ? l10n.approved : l10n.declined,
@@ -361,7 +427,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
               ],
             ),
             if (isPending) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -378,12 +444,15 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 48),
                         foregroundColor: AppColors.emergency,
-                        side: const BorderSide(color: AppColors.emergency, width: 1.5),
+                        side: const BorderSide(color: AppColors.emergency, width: 2.0),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: Text(l10n.decline, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        l10n.decline,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -402,11 +471,15 @@ class _CaregiverRequestCard extends ConsumerWidget {
                         minimumSize: const Size(0, 48),
                         backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
+                        elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: Text(l10n.approve, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        l10n.approve,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -418,3 +491,4 @@ class _CaregiverRequestCard extends ConsumerWidget {
     );
   }
 }
+

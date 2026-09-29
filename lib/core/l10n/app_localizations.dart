@@ -216,6 +216,12 @@ class AppLocalizations {
   // ─── Error View ───
   String get somethingWentWrong => _t('somethingWentWrong');
 
+  String get quickActions => _t('quickActions');
+  String get medicationStatus => _t('medicationStatus');
+  String get bookDoctor => _t('bookDoctor');
+  String get callFamily => _t('callFamily');
+  String get aiVoiceCompanion => _t('aiVoiceCompanion');
+
   // ─── Misc ───
   String get km => _t('km');
   String get min => _t('min');
@@ -444,6 +450,11 @@ class AppLocalizations {
     // Misc
     'km': 'km',
     'min': 'min',
+    'quickActions': 'Quick Actions',
+    'medicationStatus': 'Medication Status',
+    'bookDoctor': 'Book Doctor',
+    'callFamily': 'Call Family',
+    'aiVoiceCompanion': 'AI Voice Companion',
   };
 
   // ───── Arabic Strings ─────
@@ -631,6 +642,11 @@ class AppLocalizations {
     // Misc
     'km': 'كم',
     'min': 'دقيقة',
+    'quickActions': 'إجراءات سريعة',
+    'medicationStatus': 'حالة الأدوية',
+    'bookDoctor': 'حجز طبيب',
+    'callFamily': 'الاتصال بالعائلة',
+    'aiVoiceCompanion': 'المساعد الصوتي الذكي',
   };
 }
 

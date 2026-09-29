@@ -341,7 +341,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, size: 28),
+                icon: const Icon(Icons.arrow_back_rounded, size: 28),
                 tooltip: 'Back',
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
@@ -357,8 +357,15 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.medication, color: AppColors.textLight, size: 30),
+                child: const Icon(Icons.medication_rounded, color: AppColors.textLight, size: 30),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -367,15 +374,20 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                   children: [
                     Text(
                       l10n.medicationReminders,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        color: theme.brightness == Brightness.dark
+                            ? AppColorsDark.textPrimary
+                            : AppColors.textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     Text(
                       l10n.neverMissMed,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
@@ -384,19 +396,26 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // ─── Summary Card Header ───
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF3B5BDB), Color(0xFF4C6EF5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -407,18 +426,19 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                       Text(
                         l10n.remindersScheduled(reminders.length),
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
+                          letterSpacing: -0.2,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         'Completed: $completedCount • Pending: $pendingCount',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -427,19 +447,19 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: 0.22),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.event_available,
+                    Icons.event_available_rounded,
                     color: Colors.white,
-                    size: 28,
+                    size: 32,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // ─── Time Period Filter Chips ───
           SingleChildScrollView(
@@ -448,7 +468,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               children: [
                 _FilterChipItem(
                   label: l10n.allReminders,
-                  icon: Icons.apps,
+                  icon: Icons.apps_rounded,
                   isSelected: _selectedPeriodFilter == 'all',
                   onTap: () => setState(() => _selectedPeriodFilter = 'all'),
                 ),
@@ -462,14 +482,14 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 const SizedBox(width: 8),
                 _FilterChipItem(
                   label: '${l10n.afternoon} ☀️',
-                  icon: Icons.wb_sunny,
+                  icon: Icons.wb_sunny_rounded,
                   isSelected: _selectedPeriodFilter == 'afternoon',
                   onTap: () => setState(() => _selectedPeriodFilter = 'afternoon'),
                 ),
                 const SizedBox(width: 8),
                 _FilterChipItem(
                   label: '${l10n.evening} 🌆',
-                  icon: Icons.wb_twilight,
+                  icon: Icons.wb_twilight_rounded,
                   isSelected: _selectedPeriodFilter == 'evening',
                   onTap: () => setState(() => _selectedPeriodFilter = 'evening'),
                 ),
@@ -483,7 +503,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // ─── List of Medication Cards ───
           Expanded(
@@ -493,6 +513,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                       'No reminders found for this period.',
                       style: TextStyle(
                         fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
@@ -524,22 +545,23 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     },
                   ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // ─── Bottom Add Reminder Button (Min 56px height) ───
           ElevatedButton.icon(
             onPressed: () => _showAddEditReminderDialog(context: context, ref: ref),
-            icon: const Icon(Icons.add_circle_outline, size: 26),
+            icon: const Icon(Icons.add_circle_outline_rounded, size: 26),
             label: Text(
               l10n.addNewReminder,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 56),
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.textLight,
+              elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),

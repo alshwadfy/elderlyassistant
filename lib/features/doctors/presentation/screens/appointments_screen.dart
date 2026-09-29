@@ -211,7 +211,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, size: 28),
+                icon: const Icon(Icons.arrow_back_rounded, size: 28),
                 tooltip: 'Back',
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
@@ -228,15 +228,20 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                   children: [
                     Text(
                       l10n.myAppointments,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        color: theme.brightness == Brightness.dark
+                            ? AppColorsDark.textPrimary
+                            : AppColors.textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     Text(
                       l10n.manageAppointments,
                       style: TextStyle(
                         fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
@@ -245,30 +250,45 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(16),
+              color: theme.brightness == Brightness.dark
+                  ? AppColorsDark.surface
+                  : AppColors.chipUnselected,
+              borderRadius: BorderRadius.circular(20),
             ),
             padding: const EdgeInsets.all(4),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
+                color: theme.brightness == Brightness.dark
+                    ? AppColorsDark.primary
+                    : AppColors.primary,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               labelColor: Colors.white,
-              unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              unselectedLabelColor: theme.brightness == Brightness.dark
+                  ? AppColorsDark.textSecondary
+                  : AppColors.textSecondary,
+              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
               tabs: [
                 Tab(text: '${l10n.upcoming} (${upcoming.length})'),
                 Tab(text: l10n.past),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -278,20 +298,21 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ElevatedButton.icon(
             onPressed: _showAddAppointmentDialog,
-            icon: const Icon(Icons.add_circle_outline, size: 26),
+            icon: const Icon(Icons.add_circle_outline_rounded, size: 26),
             label: Text(
               l10n.addNewAppointment,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 56),
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.textLight,
+              elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),
@@ -307,14 +328,21 @@ class _CalendarBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 48,
+      width: 52,
+      height: 52,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: AppColors.primaryContainer,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: const Icon(Icons.calendar_today, color: AppColors.primary, size: 24),
+      child: const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 28),
     );
   }
 }
@@ -334,7 +362,7 @@ class _AppointmentList extends StatelessWidget {
           l10n.noAppointments,
           style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
@@ -392,30 +420,43 @@ class _AppointmentCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final isCancelled = appt.status == 'Cancelled';
     final isUpcoming = appt.status == 'Upcoming';
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      decoration: BoxDecoration(
+        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark ? AppColorsDark.border : AppColors.border,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           children: [
             Row(
               children: [
                 CircleAvatar(
-                  radius: 24,
+                  radius: 26,
                   backgroundColor: isCancelled
                       ? AppColors.emergencyContainer
                       : AppColors.primaryContainer,
                   child: Icon(
-                    isCancelled ? Icons.event_busy : Icons.medical_information,
+                    isCancelled ? Icons.event_busy_rounded : Icons.medical_information_rounded,
                     color: isCancelled ? AppColors.emergency : AppColors.primary,
-                    size: 24,
+                    size: 26,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -429,8 +470,9 @@ class _AppointmentCard extends ConsumerWidget {
                             child: Text(
                               appt.doctorName,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                                 fontSize: 17,
+                                color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
                                 decoration: isCancelled
                                     ? TextDecoration.lineThrough
                                     : null,
@@ -440,26 +482,28 @@ class _AppointmentCard extends ConsumerWidget {
                           _AppointmentStatusBadge(status: appt.status, l10n: l10n),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         appt.doctorType,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w600,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.access_time, size: 16, color: AppColors.primary),
+                          const Icon(Icons.access_time_rounded, size: 16, color: AppColors.primary),
                           const SizedBox(width: 6),
-                          Text(
-                            _formatAppointment(appt.dateTime),
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                          Flexible(
+                            child: Text(
+                              _formatAppointment(appt.dateTime),
+                              style: TextStyle(
+                                color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -480,9 +524,9 @@ class _AppointmentCard extends ConsumerWidget {
                       minimumSize: const Size(130, 44),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       foregroundColor: AppColors.emergency,
-                      side: const BorderSide(color: AppColors.emergency, width: 1.5),
+                      side: const BorderSide(color: AppColors.emergency, width: 2.0),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     icon: const Icon(Icons.cancel_outlined, size: 18),

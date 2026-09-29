@@ -19,49 +19,78 @@ class ProfileScreen extends ConsumerWidget {
     final isArabic = currentLocale.languageCode == 'ar';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.profileSettings,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 24),
-          Card(
+          const SizedBox(height: 20),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColorsDark.surface : AppColors.surface,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark ? AppColorsDark.border : AppColors.border,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 36,
-                    backgroundColor: AppColors.primary,
-                    child: Icon(
-                      Icons.person_outline,
-                      size: 40,
-                      color: AppColors.textLight,
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryLight],
+                      ),
+                    ),
+                    child: const CircleAvatar(
+                      radius: 34,
+                      backgroundColor: AppColors.primaryContainer,
+                      child: Icon(
+                        Icons.person_rounded,
+                        size: 40,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Adel Ahmed',
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           '+20 10 1234 5678',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -71,7 +100,13 @@ class ProfileScreen extends ConsumerWidget {
                     onPressed: () {
                       showDemoSnackBar(context, 'Edit profile will use the API later');
                     },
-                    child: Text(l10n.edit, style: const TextStyle(fontSize: 16)),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                    child: Text(
+                      l10n.edit,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -81,7 +116,7 @@ class ProfileScreen extends ConsumerWidget {
 
           // ─── Settings Controls ───
           _SettingsSwitchTile(
-            icon: Icons.language_outlined,
+            icon: Icons.language_rounded,
             title: l10n.language,
             subtitle: isArabic ? l10n.arabic : l10n.english,
             value: isArabic,
@@ -92,7 +127,7 @@ class ProfileScreen extends ConsumerWidget {
             inactiveText: 'English',
           ),
           _SettingsSwitchTile(
-            icon: isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+            icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
             title: l10n.appearance,
             subtitle: isDark ? l10n.darkMode : l10n.lightMode,
             value: isDark,
@@ -103,31 +138,31 @@ class ProfileScreen extends ConsumerWidget {
             inactiveText: l10n.lightMode,
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           _SettingsItem(
-            icon: Icons.volume_up_outlined,
+            icon: Icons.volume_up_rounded,
             title: l10n.voiceSettings,
             subtitle: l10n.voiceSettingsSub,
             onTap: () => showDemoSnackBar(context, 'Voice settings (demo)'),
           ),
           _SettingsItem(
-            icon: Icons.notifications_none_outlined,
+            icon: Icons.notifications_active_rounded,
             title: l10n.notifications,
             subtitle: l10n.notificationsSub,
             onTap: () => showDemoSnackBar(context, 'Notifications (demo)'),
           ),
           _SettingsItem(
-            icon: Icons.security_outlined,
+            icon: Icons.security_rounded,
             title: l10n.privacySecurity,
             subtitle: l10n.privacySub,
             onTap: () => showDemoSnackBar(context, 'Privacy settings (demo)'),
           ),
           _SettingsItem(
-            icon: Icons.info_outline,
+            icon: Icons.info_rounded,
             title: l10n.about,
             subtitle: l10n.aboutSub,
-            onTap: () => showDemoSnackBar(context, 'AI Elderly Assistant v1.0.0'),
+            onTap: () => showDemoSnackBar(context, 'AI Elderly Assistant v2.0.0'),
           ),
         ],
       ),
