@@ -12,7 +12,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Get Started'), findsOneWidget);
-    expect(find.text('Login'), findsOneWidget);
+    // Button text changed to full literal sentence per ui.md spec
+    expect(find.text('Log In to Existing Account'), findsOneWidget);
     expect(find.textContaining('Your voice'), findsOneWidget);
   });
 
@@ -25,10 +26,11 @@ void main() {
 
     expect(find.text('Meet Your Assistant'), findsOneWidget);
 
+    // Scroll the first (vertical page) Scrollable only, not any text field inside
     await tester.scrollUntilVisible(
       find.text('Complete Setup & Go Home'),
       200.0,
-      scrollable: find.byType(Scrollable),
+      scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Complete Setup & Go Home'));
@@ -80,7 +82,8 @@ void main() {
     expect(size.width, greaterThanOrEqualTo(48));
   });
 
-  testWidgets('primary palette uses Figma blue', (tester) async {
-    expect(AppColors.primary, const Color(0xFF3B5BDB));
+  testWidgets('primary palette uses correct brand blue per ui.md spec', (tester) async {
+    // Updated from old Figma blue #3B5BDB to spec-mandated #1647AD
+    expect(AppColors.primary, const Color(0xFF1647AD));
   });
 }

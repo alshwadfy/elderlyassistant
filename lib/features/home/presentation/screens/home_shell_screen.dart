@@ -74,12 +74,17 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final connection = ref.watch(socketConnectionStateProvider);
     final connectionState =
         connection.asData?.value ?? SocketConnectionState.idle;
 
+    final emergencyBg = isDark ? AppColorsDark.emergencyBg : AppColors.emergencyBg;
+    final scaffoldBg = _showHeader ? theme.scaffoldBackgroundColor : emergencyBg;
+
     return Scaffold(
-      backgroundColor: _showHeader ? AppColors.background : AppColors.emergencyBg,
+      backgroundColor: scaffoldBg,
       appBar: _showHeader ? const AppHeader() : null,
       body: Column(
         children: [

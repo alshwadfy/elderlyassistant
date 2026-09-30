@@ -86,7 +86,15 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final doctors = _visible(ref.watch(doctorsProvider));
+
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final chipUnselected = isDark ? AppColorsDark.chipUnselected : AppColors.chipUnselected;
+    final chipTextUnselected = isDark ? AppColorsDark.chipTextUnselected : AppColors.chipTextUnselected;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -105,9 +113,9 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                 },
               ),
               const SizedBox(width: 8),
-              const _TitleIcon(icon: Icons.person_search_rounded),
+              _TitleIcon(icon: Icons.person_search_rounded, isDark: isDark),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -116,16 +124,17 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
+                        color: textPrimary,
                         letterSpacing: -0.3,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       'Search for nearby doctors and book an appointment',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: textSecondary,
                       ),
                     ),
                   ],
@@ -136,21 +145,16 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
           const SizedBox(height: 20),
           TextField(
             onChanged: (value) => setState(() => _query = value),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textPrimary),
             decoration: InputDecoration(
               hintText: 'Search by speciality (e.g. cardiologist)',
-              prefixIcon: const Icon(Icons.search_rounded, size: 24),
-              fillColor: AppColors.surface,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-              ),
+              prefixIcon: Icon(Icons.search_rounded, size: 24, color: primaryColor),
             ),
           ),
           const SizedBox(height: 14),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: _filters.map((filter) {
                 final isSelected = filter == _selectedFilter;
@@ -165,13 +169,13 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                       selected: isSelected,
                       labelStyle: TextStyle(
                         color: isSelected
-                            ? AppColors.textLight
-                            : AppColors.chipTextUnselected,
+                            ? Colors.white
+                            : chipTextUnselected,
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
-                      selectedColor: AppColors.primary,
-                      backgroundColor: AppColors.chipUnselected,
+                      selectedColor: primaryColor,
+                      backgroundColor: chipUnselected,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -190,16 +194,17 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
           const SizedBox(height: 18),
           Expanded(
             child: doctors.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'No doctors match this search.',
                       style: TextStyle(
                         fontSize: 16,
-                        color: AppColors.textSecondary,
+                        color: textSecondary,
                       ),
                     ),
                   )
                 : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
                     itemCount: doctors.length,
                     itemBuilder: (context, index) {
                       return DoctorCard(
@@ -216,21 +221,23 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
 }
 
 class _TitleIcon extends StatelessWidget {
-  const _TitleIcon({required this.icon});
+  const _TitleIcon({required this.icon, required this.isDark});
 
   final IconData icon;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
     return Container(
       width: 48,
       height: 48,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: primaryColor,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(icon, color: AppColors.textLight),
+      child: Icon(icon, color: Colors.white),
     );
   }
 }

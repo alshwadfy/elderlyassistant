@@ -37,6 +37,11 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
+
     final contacts = ref.watch(familyProvider);
     final caregiverRequests = ref.watch(caregiverRequestsProvider);
     final pendingCount =
@@ -68,7 +73,7 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                        color: textPrimary,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -77,7 +82,7 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                        color: textSecondary,
                       ),
                     ),
                   ],
@@ -97,18 +102,18 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                color: isDark ? AppColorsDark.primary : AppColors.primary,
+                color: primaryColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.25),
+                    color: primaryColor.withValues(alpha: 0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
                 ],
               ),
               labelColor: Colors.white,
-              unselectedLabelColor: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+              unselectedLabelColor: textSecondary,
               labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               indicatorSize: TabBarIndicatorSize.tab,
@@ -125,7 +130,7 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.emergency,
+                            color: emergencyColor,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -152,14 +157,15 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
               children: [
                 // Family Contacts List
                 ListView.separated(
+                  physics: const BouncingScrollPhysics(),
                   itemCount: contacts.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 14),
                   itemBuilder: (context, index) {
-                    return _ContactCard(contact: contacts[index]);
+                    return _ContactCard(contact: contacts[index], isDark: isDark);
                   },
                 ),
                 // Caregiver Requests List
-                _CaregiverRequestsList(requests: caregiverRequests),
+                _CaregiverRequestsList(requests: caregiverRequests, isDark: isDark),
               ],
             ),
           ),
@@ -170,26 +176,32 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
 }
 
 class _ContactCard extends StatelessWidget {
-  const _ContactCard({required this.contact});
+  const _ContactCard({required this.contact, required this.isDark});
 
   final EmergencyContactModel contact;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
+    final successColor = isDark ? AppColorsDark.success : AppColors.success;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
+    final border = isDark ? AppColorsDark.border : AppColors.border;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        color: surface,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColorsDark.border : AppColors.border,
+          color: border,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -203,13 +215,13 @@ class _ContactCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: AppColors.primaryContainer,
+                  backgroundColor: primaryContainer,
                   child: Text(
                     contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 22,
-                      color: AppColors.primary,
+                      color: primaryColor,
                     ),
                   ),
                 ),
@@ -220,9 +232,9 @@ class _ContactCard extends StatelessWidget {
                     width: 14,
                     height: 14,
                     decoration: BoxDecoration(
-                      color: AppColors.success,
+                      color: successColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: surface, width: 2),
                     ),
                   ),
                 ),
@@ -241,7 +253,7 @@ class _ContactCard extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
-                            color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                            color: textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -250,15 +262,15 @@ class _ContactCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
+                          color: primaryContainer,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           contact.relation,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: primaryColor,
                           ),
                         ),
                       ),
@@ -268,7 +280,7 @@ class _ContactCard extends StatelessWidget {
                   Text(
                     contact.phone,
                     style: TextStyle(
-                      color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                      color: textSecondary,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -279,10 +291,10 @@ class _ContactCard extends StatelessWidget {
             IconButton.filledTonal(
               tooltip: 'Call ${contact.name}',
               style: IconButton.styleFrom(
-                backgroundColor: AppColors.primaryContainer,
+                backgroundColor: primaryContainer,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              icon: const Icon(Icons.call_rounded, color: AppColors.primary, size: 24),
+              icon: Icon(Icons.call_rounded, color: primaryColor, size: 24),
               onPressed: () {
                 showDemoSnackBar(context, 'Calling ${contact.name} (${contact.phone})');
               },
@@ -295,22 +307,22 @@ class _ContactCard extends StatelessWidget {
 }
 
 class _CaregiverRequestsList extends ConsumerWidget {
-  const _CaregiverRequestsList({required this.requests});
+  const _CaregiverRequestsList({required this.requests, required this.isDark});
 
   final List<CaregiverRequestModel> requests;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final textMuted = isDark ? AppColorsDark.textMuted : AppColors.textMuted;
 
     if (requests.isEmpty) {
       return Center(
         child: Text(
           l10n.noPendingRequests,
           style: TextStyle(
-            color: isDark ? AppColorsDark.textMuted : AppColors.textMuted,
+            color: textMuted,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -319,41 +331,51 @@ class _CaregiverRequestsList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      physics: const BouncingScrollPhysics(),
       itemCount: requests.length,
       itemBuilder: (context, index) {
         final req = requests[index];
-        return _CaregiverRequestCard(req: req);
+        return _CaregiverRequestCard(req: req, isDark: isDark);
       },
     );
   }
 }
 
 class _CaregiverRequestCard extends ConsumerWidget {
-  const _CaregiverRequestCard({required this.req});
+  const _CaregiverRequestCard({required this.req, required this.isDark});
 
   final CaregiverRequestModel req;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     final isPending = req.status == 'pending';
     final isApproved = req.status == 'approved';
+
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
+    final successColor = isDark ? AppColorsDark.success : AppColors.success;
+    final successContainer = isDark ? AppColorsDark.successContainer : AppColors.successContainer;
+    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
+    final emergencyContainer = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
+    final border = isDark ? AppColorsDark.border : AppColors.border;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        color: surface,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColorsDark.border : AppColors.border,
+          color: border,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -369,17 +391,17 @@ class _CaregiverRequestCard extends ConsumerWidget {
                 CircleAvatar(
                   radius: 26,
                   backgroundColor: isApproved
-                      ? AppColors.successContainer
+                      ? successContainer
                       : req.status == 'declined'
-                          ? AppColors.emergencyContainer
-                          : AppColors.primaryContainer,
+                          ? emergencyContainer
+                          : primaryContainer,
                   child: Icon(
                     Icons.family_restroom_rounded,
                     color: isApproved
-                        ? AppColors.success
+                        ? successColor
                         : req.status == 'declined'
-                            ? AppColors.emergency
-                            : AppColors.primary,
+                            ? emergencyColor
+                            : primaryColor,
                     size: 28,
                   ),
                 ),
@@ -393,7 +415,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                          color: textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -402,7 +424,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                          color: textSecondary,
                         ),
                       ),
                     ],
@@ -412,7 +434,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: isApproved ? AppColors.successContainer : AppColors.emergencyContainer,
+                      color: isApproved ? successContainer : emergencyContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -420,7 +442,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: isApproved ? AppColors.success : AppColors.emergency,
+                        color: isApproved ? successColor : emergencyColor,
                       ),
                     ),
                   ),
@@ -443,8 +465,8 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       },
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 48),
-                        foregroundColor: AppColors.emergency,
-                        side: const BorderSide(color: AppColors.emergency, width: 2.0),
+                        foregroundColor: emergencyColor,
+                        side: BorderSide(color: emergencyColor, width: 2.0),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -469,7 +491,7 @@ class _CaregiverRequestCard extends ConsumerWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(0, 48),
-                        backgroundColor: AppColors.success,
+                        backgroundColor: successColor,
                         foregroundColor: Colors.white,
                         elevation: 2,
                         shape: RoundedRectangleBorder(
@@ -491,4 +513,3 @@ class _CaregiverRequestCard extends ConsumerWidget {
     );
   }
 }
-

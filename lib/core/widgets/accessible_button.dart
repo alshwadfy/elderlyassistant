@@ -10,7 +10,7 @@ class AccessibleButton extends StatelessWidget {
     this.icon,
     this.backgroundColor = AppColors.primary,
     this.foregroundColor = AppColors.textLight,
-    this.height = 56.0,
+    this.height = 64.0,
     this.width,
   });
 
@@ -40,7 +40,7 @@ class AccessibleButton extends StatelessWidget {
           height: height,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(18),
               boxShadow: onPressed != null
                   ? [
                       BoxShadow(
@@ -58,7 +58,7 @@ class AccessibleButton extends StatelessWidget {
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(18),
                 ),
               ),
               onPressed: onPressed,

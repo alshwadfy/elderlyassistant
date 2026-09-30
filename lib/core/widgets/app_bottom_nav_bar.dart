@@ -18,12 +18,17 @@ class AppBottomNavBar extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final navActive = isDark ? AppColorsDark.navActive : AppColors.navActive;
+    final navInactive = isDark ? AppColorsDark.navInactive : AppColors.navInactive;
+    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
+    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
+
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        color: surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -40,30 +45,30 @@ class AppBottomNavBar extends StatelessWidget {
             height: 62,
             backgroundColor: Colors.transparent,
             elevation: 0,
-            indicatorColor: isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer,
+            indicatorColor: primaryContainer,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.home_outlined, size: 26),
-                selectedIcon: Icon(Icons.home_rounded, color: AppColors.primary, size: 28),
+                icon: Icon(Icons.home_outlined, size: 26, color: navInactive),
+                selectedIcon: Icon(Icons.home_rounded, color: navActive, size: 28),
                 label: 'Home',
                 tooltip: 'Home',
               ),
               NavigationDestination(
-                icon: Icon(Icons.calendar_today_outlined, size: 24),
-                selectedIcon: Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 26),
+                icon: Icon(Icons.calendar_today_outlined, size: 24, color: navInactive),
+                selectedIcon: Icon(Icons.calendar_month_rounded, color: navActive, size: 26),
                 label: 'Schedule',
                 tooltip: 'Schedule and appointments',
               ),
               NavigationDestination(
-                icon: Icon(Icons.notifications_none_outlined, size: 26),
-                selectedIcon: Icon(Icons.notifications_rounded, color: AppColors.primary, size: 28),
+                icon: Icon(Icons.notifications_none_outlined, size: 26, color: navInactive),
+                selectedIcon: Icon(Icons.notifications_rounded, color: navActive, size: 28),
                 label: 'Reminders',
                 tooltip: 'Medication reminders',
               ),
               NavigationDestination(
-                icon: Icon(Icons.more_horiz_rounded, size: 26),
-                selectedIcon: Icon(Icons.more_horiz_rounded, color: AppColors.primary, size: 28),
+                icon: Icon(Icons.more_horiz_rounded, size: 26, color: navInactive),
+                selectedIcon: Icon(Icons.more_horiz_rounded, color: navActive, size: 28),
                 label: 'More',
                 tooltip: 'Profile and settings',
               ),
@@ -74,4 +79,3 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 }
-

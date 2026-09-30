@@ -54,34 +54,43 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
 
     return Scaffold(
+      backgroundColor: isDark ? AppColorsDark.background : AppColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Verify Your Code',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: primaryColor,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'We sent a simple 4-digit security code to your phone. Demo code: 1234',
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 16, color: textSecondary),
               ),
               const SizedBox(height: 32),
               if (authState.error != null) ...[
                 Text(
                   authState.error!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.emergency,
+                  style: TextStyle(
+                    color: emergencyColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -89,7 +98,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                 const SizedBox(height: 16),
               ],
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(4, (index) {
                   return SizedBox(
                     width: 64,
@@ -99,9 +108,10 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                       focusNode: _focusNodes[index],
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
+                        color: textPrimary,
                       ),
                       inputFormatters: [
                         LengthLimitingTextInputFormatter(1),
@@ -123,6 +133,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
               AccessibleButton(
                 label: authState.isLoading ? 'Verifying...' : 'Verify & Continue',
                 semanticLabel: 'Verify code and continue',
+                backgroundColor: primaryColor,
                 onPressed: authState.isLoading ? null : _handleVerify,
               ),
               const SizedBox(height: 12),
@@ -130,7 +141,10 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                 onPressed: () {
                   showDemoSnackBar(context, 'New code sent (demo)');
                 },
-                child: const Text('Resend Code'),
+                child: Text(
+                  'Resend Code',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: primaryColor),
+                ),
               ),
             ],
           ),

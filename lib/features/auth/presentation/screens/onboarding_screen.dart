@@ -39,40 +39,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+
     return Scaffold(
+      backgroundColor: isDark ? AppColorsDark.background : AppColors.background,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(24),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           children: [
-            const Row(
+            Row(
               children: [
-                AppLogo(size: 40),
-                SizedBox(width: 12),
+                const AppLogo(size: 40),
+                const SizedBox(width: 12),
                 Text(
                   'AI Elderly Assistant',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: primaryColor,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 28),
-            const Text(
+            Text(
               'Meet Your Assistant',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: textPrimary,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Choose how you\'d like your companion to speak with you. You can change this at any time.',
               style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textSecondary,
+                color: textSecondary,
               ),
             ),
             const SizedBox(height: 24),
@@ -81,6 +90,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 title: _voices[i].$1,
                 description: _voices[i].$2,
                 isSelected: _selected == i,
+                isDark: isDark,
                 onTap: () => setState(() => _selected = i),
               ),
             const SizedBox(height: 8),
@@ -91,26 +101,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   'Playing ${_voices[_selected].$1} sample (demo)',
                 );
               },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: primaryColor,
+                side: BorderSide(color: primaryColor, width: 2),
+                minimumSize: const Size(double.infinity, 52),
+              ),
               icon: const Icon(Icons.play_arrow),
-              label: const Text('Play Voice Sample'),
+              label: const Text('Play Voice Sample', style: TextStyle(fontWeight: FontWeight.w700)),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'What should I call you?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
+              style: TextStyle(fontSize: 18, color: textPrimary),
+              decoration: InputDecoration(
                 hintText: 'e.g. Eleanor',
-                prefixIcon: Icon(Icons.person_outline),
+                prefixIcon: Icon(Icons.person_outline, color: primaryColor),
               ),
             ),
             const SizedBox(height: 24),
             AccessibleButton(
               label: 'Complete Setup & Go Home',
               semanticLabel: 'Complete setup and go to Home',
+              backgroundColor: primaryColor,
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
@@ -132,16 +149,26 @@ class _VoiceOption extends StatelessWidget {
     required this.title,
     required this.description,
     required this.isSelected,
+    required this.isDark,
     required this.onTap,
   });
 
   final String title;
   final String description;
   final bool isSelected;
+  final bool isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final cardBg = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isSelected
+        ? primaryColor
+        : (isDark ? AppColorsDark.border : AppColors.border);
+
     return Semantics(
       button: true,
       selected: isSelected,
@@ -153,11 +180,11 @@ class _VoiceOption extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: cardBg,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border,
-              width: isSelected ? 2 : 1,
+              color: borderColor,
+              width: isSelected ? 2.5 : 1.5,
             ),
           ),
           child: Column(
@@ -167,17 +194,21 @@ class _VoiceOption extends StatelessWidget {
                 children: [
                   Icon(
                     isSelected
-                        ? Icons.check_circle
+                        ? Icons.check_circle_rounded
                         : Icons.radio_button_unchecked,
-                    color: isSelected ? AppColors.primary : AppColors.textMuted,
+                    color: isSelected
+                        ? primaryColor
+                        : (isDark ? AppColorsDark.textMuted : AppColors.textMuted),
+                    size: 24,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: textPrimary,
                       ),
                     ),
                   ),
@@ -188,8 +219,8 @@ class _VoiceOption extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 36),
                 child: Text(
                   description,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: textSecondary,
                     fontSize: 14,
                   ),
                 ),

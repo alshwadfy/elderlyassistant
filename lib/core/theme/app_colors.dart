@@ -1,98 +1,95 @@
 import 'package:flutter/material.dart';
 
-/// Color palette extracted from the Figma design for AI Elderly Assistant.
-/// High-contrast, accessibility-first for elderly users.
+/// Exact palette from ui.md — AI Elderly Assistant
+/// All values verified against WCAG AA (4.5:1 min), targeting AAA (7:1+).
 class AppColors {
   const AppColors._();
 
-  // Primary Blues — from Figma design
-  static const Color primary = Color(0xFF3B5BDB); // Main blue (buttons, nav active)
-  static const Color primaryLight = Color(0xFF6B8AFF); // Lighter blue accents
-  static const Color primaryContainer = Color(0xFFEEF2FF); // Blue tinted background
-  static const Color primarySurface = Color(0xFFF0F4FF); // Feature card background
+  // ─── Brand ────────────────────────────────────────────────────────────────
+  static const Color primary = Color(0xFF1647AD); // Buttons, active nav, primary actions
+  static const Color primaryDark = Color(0xFF10275A); // Pressed states, dark-mode surfaces
+  static const Color primaryContainer = Color(0xFFE9ECFF); // Selected states, subtle highlight fills
 
-  // Secondary / Teal
-  static const Color secondary = Color(0xFF0F766E);
-  static const Color secondaryContainer = Color(0xFFCCFBF1);
+  // Legacy aliases kept so existing code referencing them still compiles
+  static const Color primaryLight = Color(0xFF3D68D0); // Slightly lighter for hover states
+  static const Color primarySurface = Color(0xFFE9ECFF);
 
-  // Background & Surface
-  static const Color background = Color(0xFFF8FAFC);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color cardBorder = Color(0xFFE2E8F0);
+  // ─── Background & Surface ─────────────────────────────────────────────────
+  static const Color background = Color(0xFFF7F9FF); // App background
+  static const Color surface = Color(0xFFFFFFFF); // Cards
+  static const Color cardBorder = Color(0xFFD8DEFF);
 
-  // Emergency Red/Coral — from Figma emergency screen
-  static const Color emergency = Color(0xFFE53E3E);
-  static const Color emergencyLight = Color(0xFFFF6B6B);
+  // ─── Text ─────────────────────────────────────────────────────────────────
+  static const Color textPrimary = Color(0xFF1A2B4A); // Headings, primary body text (>7:1 on white)
+  static const Color textSecondary = Color(0xFF4B5875); // 7.1:1 on white — replaces #66789E
+  static const Color textMuted = Color(0xFF4B5875); // Same safe floor — never go lighter
+  static const Color textLight = Color(0xFFFFFFFF);
+
+  // ─── Status — required by spec ────────────────────────────────────────────
+  static const Color success = Color(0xFF15803D); // 5.0:1 on white
+  static const Color successContainer = Color(0xFFDCFCE7); // Tint for badges/cards
+  static const Color warning = Color(0xFFB45309); // 5.0:1 on white
+  static const Color warningContainer = Color(0xFFFEF3C7);
+  static const Color emergency = Color(0xFFB91C1C); // Error/Emergency — 6.5:1 on white
   static const Color emergencyContainer = Color(0xFFFEE2E2);
   static const Color emergencyBg = Color(0xFFFFF5F5);
 
-  // Text colors — High contrast for elderly accessibility
-  static const Color textPrimary = Color(0xFF0F172A); // Slate 900 (crisp near-black)
-  static const Color textSecondary = Color(0xFF334155); // Slate 700 (high contrast subtitle/body)
-  static const Color textMuted = Color(0xFF475569); // Slate 600 (accessible muted/placeholder text)
-  static const Color textLight = Color(0xFFFFFFFF);
+  // Legacy aliases
+  static const Color emergencyLight = Color(0xFFDC2626);
+  static const Color secondary = Color(0xFF15803D);
+  static const Color secondaryContainer = Color(0xFFDCFCE7);
 
-  // Success / completion
-  static const Color success = Color(0xFF38A169);
-  static const Color successContainer = Color(0xFFC6F6D5);
+  // ─── Borders & dividers ───────────────────────────────────────────────────
+  static const Color border = Color(0xFFD8DEFF);
+  static const Color divider = Color(0xFFE9ECFF);
 
-  // Warning
-  static const Color warning = Color(0xFFD69E2E);
-  static const Color warningContainer = Color(0xFFFEFCBF);
+  // ─── Navigation ───────────────────────────────────────────────────────────
+  static const Color navInactive = Color(0xFF4B5875); // 7.1:1 — always readable
+  static const Color navActive = Color(0xFF1647AD);
 
-  // Borders & dividers
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color divider = Color(0xFFEDF2F7);
-
-  // Bottom navigation
-  static const Color navInactive = Color(0xFF475569); // Slate 600 (accessible inactive state)
-  static const Color navActive = Color(0xFF3B5BDB);
-
-  // Chip/filter
-  static const Color chipSelected = Color(0xFF3B5BDB);
-  static const Color chipUnselected = Color(0xFFF1F5F9);
-  static const Color chipTextUnselected = Color(0xFF334155); // Slate 700
+  // ─── Chips ────────────────────────────────────────────────────────────────
+  static const Color chipSelected = Color(0xFF1647AD);
+  static const Color chipUnselected = Color(0xFFE9ECFF);
+  static const Color chipTextUnselected = Color(0xFF1A2B4A);
 }
 
-/// Dark theme color palette for AI Elderly Assistant.
-/// High contrast, easy on the eyes in low light conditions.
+/// Dark theme — high contrast, easy on eyes in low light.
 class AppColorsDark {
   const AppColorsDark._();
 
-  static const Color primary = Color(0xFF5C7CFA);
-  static const Color primaryLight = Color(0xFF748FFC);
-  static const Color primaryContainer = Color(0xFF1E293B);
-  static const Color primarySurface = Color(0xFF1E293B);
+  static const Color primary = Color(0xFF5B8DEF); // Lighter blue — readable on dark bg
+  static const Color primaryDark = Color(0xFF1647AD);
+  static const Color primaryContainer = Color(0xFF1E2D4A); // Dark tinted surface
+  static const Color primaryLight = Color(0xFF7BA7FF);
+  static const Color primarySurface = Color(0xFF1E2D4A);
 
-  static const Color secondary = Color(0xFF14B8A6);
-  static const Color secondaryContainer = Color(0xFF134E4A);
+  static const Color background = Color(0xFF0D1521); // Very dark navy
+  static const Color surface = Color(0xFF182030); // Card surface
+  static const Color cardBorder = Color(0xFF253553);
 
-  static const Color background = Color(0xFF0F172A); // Slate 900
-  static const Color surface = Color(0xFF1E293B); // Slate 800
-  static const Color cardBorder = Color(0xFF334155); // Slate 700
-
-  static const Color emergency = Color(0xFFEF4444);
-  static const Color emergencyContainer = Color(0xFF450A0A);
-
-  static const Color textPrimary = Color(0xFFF8FAFC); // Slate 50
-  static const Color textSecondary = Color(0xFFCBD5E1); // Slate 300
-  static const Color textMuted = Color(0xFF94A3B8); // Slate 400
+  static const Color textPrimary = Color(0xFFF0F4FF); // Near-white — high contrast
+  static const Color textSecondary = Color(0xFFB8C8E8); // Readable on dark
+  static const Color textMuted = Color(0xFF8FA8C8);
   static const Color textLight = Color(0xFFFFFFFF);
 
-  static const Color success = Color(0xFF4ADE80);
-  static const Color successContainer = Color(0xFF052E16);
+  static const Color success = Color(0xFF34D27A); // Bright enough on dark
+  static const Color successContainer = Color(0xFF0C2B1A);
+  static const Color warning = Color(0xFFFBBF24);
+  static const Color warningContainer = Color(0xFF2A1800);
+  static const Color emergency = Color(0xFFEF4444);
+  static const Color emergencyContainer = Color(0xFF2D0A0A);
+  static const Color emergencyBg = Color(0xFF1A0808);
 
-  static const Color warning = Color(0xFFFACC15);
-  static const Color warningContainer = Color(0xFF422006);
+  static const Color secondary = Color(0xFF34D27A);
+  static const Color secondaryContainer = Color(0xFF0C2B1A);
 
-  static const Color border = Color(0xFF334155);
-  static const Color divider = Color(0xFF1E293B);
+  static const Color border = Color(0xFF253553);
+  static const Color divider = Color(0xFF1E2D4A);
 
-  static const Color navInactive = Color(0xFF94A3B8);
-  static const Color navActive = Color(0xFF5C7CFA);
+  static const Color navInactive = Color(0xFF8FA8C8);
+  static const Color navActive = Color(0xFF5B8DEF);
 
-  static const Color chipSelected = Color(0xFF5C7CFA);
-  static const Color chipUnselected = Color(0xFF334155);
-  static const Color chipTextUnselected = Color(0xFFCBD5E1);
+  static const Color chipSelected = Color(0xFF5B8DEF);
+  static const Color chipUnselected = Color(0xFF1E2D4A);
+  static const Color chipTextUnselected = Color(0xFFB8C8E8);
 }
-

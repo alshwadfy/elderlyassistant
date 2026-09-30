@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/accessible_button.dart';
 import '../../../../core/widgets/app_logo.dart';
 import '../../../../core/widgets/demo_snackbar.dart';
 import '../../../home/presentation/screens/home_shell_screen.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
 
+/// Login form — collects email and password.
+///
+/// Design decisions per ui.md:
+/// • Field labels are ABOVE the field (labelText), never placeholder-only.
+/// • All text ≥ 18sp. Error state 18sp bold with icon and large banner.
+/// • Primary button 64dp height.
+/// • Forgot password is a full labelled TextButton (≥48dp tap target).
 class LoginFormScreen extends ConsumerStatefulWidget {
   const LoginFormScreen({super.key});
 
@@ -45,115 +51,191 @@ class _LoginFormScreenState extends ConsumerState<LoginFormScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
 
     return Scaffold(
+      backgroundColor: isDark ? AppColorsDark.background : AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Row(
+              // ─── App branding ───────────────────────────────────────────
+              Row(
                 children: [
-                  AppLogo(size: 36),
-                  SizedBox(width: 10),
+                  const AppLogo(size: 36),
+                  const SizedBox(width: 12),
                   Text(
                     'AI Elderly Assistant',
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: primaryColor,
                     ),
                   ),
                 ],
               ),
+
               const SizedBox(height: 32),
-              const Text(
+
+              // ─── Page heading ───────────────────────────────────────────
+              Text(
                 'Welcome Back',
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  color: primaryColor,
+                  letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              const SizedBox(height: 10),
+              Text(
                 'Sign in below to start speaking with your assistant.',
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 28),
-              if (authState.error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.emergencyContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.emergency),
-                  ),
-                  child: Text(
-                    authState.error!,
-                    style: const TextStyle(
-                      color: AppColors.emergency,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: textSecondary,
+                  height: 1.5,
                 ),
-                const SizedBox(height: 20),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ─── Error banner ───────────────────────────────────────────
+              if (authState.error != null) ...[
+                _ErrorBanner(message: authState.error!, isDark: isDark),
+                const SizedBox(height: 24),
               ],
+
+              // ─── Email field — label above field ────────────────────────
+              _FieldLabel(label: 'Email Address', isDark: isDark),
+              const SizedBox(height: 8),
               Semantics(
-                label: 'Email address',
+                label: 'Email Address',
                 child: TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(fontSize: 18),
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address',
-                    prefixIcon: Icon(Icons.mail_outline, size: 28),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. name@email.com',
+                    prefixIcon: Icon(Icons.mail_outline_rounded, size: 26, color: primaryColor),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 22),
+
+              // ─── Password field ─────────────────────────────────────────
+              _FieldLabel(label: 'Password', isDark: isDark),
+              const SizedBox(height: 8),
               Semantics(
                 label: 'Password',
                 child: TextField(
                   controller: _passwordController,
                   obscureText: _obscure,
-                  style: const TextStyle(fontSize: 18),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: textPrimary,
+                  ),
                   decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline, size: 28),
-                    suffixIcon: IconButton(
-                      tooltip: _obscure ? 'Show password' : 'Hide password',
-                      icon: Icon(
-                        _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    hintText: 'Enter your password',
+                    prefixIcon: Icon(Icons.lock_outline_rounded, size: 26, color: primaryColor),
+                    suffixIcon: Semantics(
+                      label: _obscure ? 'Show password' : 'Hide password',
+                      child: IconButton(
+                        tooltip: _obscure ? 'Show password' : 'Hide password',
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 26,
+                          color: textSecondary,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
                       ),
-                      onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
                 ),
               ),
+
+              // ─── Forgot password ─────────────────────────────────────────
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    showDemoSnackBar(context, 'Password reset will use the API later');
+                    showDemoSnackBar(context, 'Password reset is coming soon.');
                   },
-                  child: const Text('Forgot Password?'),
+                  child: Text(
+                    'Forgot your password?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              AccessibleButton(
-                label: authState.isLoading ? 'Signing in...' : 'Log In Safely',
-                semanticLabel: 'Log in',
-                onPressed: authState.isLoading ? null : _handleLogin,
+
+              const SizedBox(height: 16),
+
+              // ─── Login button ────────────────────────────────────────────
+              Semantics(
+                label: authState.isLoading ? 'Signing in, please wait' : 'Log in',
+                button: true,
+                child: SizedBox(
+                  height: 64,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: authState.isLoading ? null : _handleLogin,
+                    child: authState.isLoading
+                        ? const SizedBox(
+                            width: 26,
+                            height: 26,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Log In Safely',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 24),
+
+              // ─── Create account link ─────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('New here? ', style: TextStyle(fontSize: 16)),
+                  Text(
+                    'New here? ',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: textSecondary,
+                    ),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -163,11 +245,12 @@ class _LoginFormScreenState extends ConsumerState<LoginFormScreen> {
                         ),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Create a free account',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: primaryColor,
                       ),
                     ),
                   ),
@@ -176,6 +259,63 @@ class _LoginFormScreenState extends ConsumerState<LoginFormScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Shared sub-widgets ────────────────────────────────────────────────────────
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.label, required this.isDark});
+  final String label;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message, required this.isDark});
+  final String message;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
+    final containerColor = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: containerColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: emergencyColor, width: 2),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_rounded, color: emergencyColor, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: emergencyColor,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

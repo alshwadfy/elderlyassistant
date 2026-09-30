@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/accessible_button.dart';
 import '../../providers/auth_provider.dart';
 import 'login_form_screen.dart';
 import 'verify_code_screen.dart';
 
+/// Register screen.
+///
+/// Design decisions per ui.md:
+/// • Bold labels ABOVE each field — label never disappears while typing.
+/// • All text ≥ 18sp.
+/// • Privacy policy checkbox text 18sp (not 14sp).
+/// • Error banner: icon + text, not just colour.
+/// • Continue button 64dp.
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -19,6 +26,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _acceptedPrivacy = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -32,7 +40,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!_acceptedPrivacy) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please accept the privacy policy')),
+        SnackBar(
+          content: const Text(
+            'Please accept the privacy policy to continue.',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
       );
       return;
     }
@@ -55,121 +71,316 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
 
     return Scaffold(
+      backgroundColor: isDark ? AppColorsDark.background : AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Semantics(
+          label: 'Go back',
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_rounded,
+              size: 28,
+              color: textPrimary,
+            ),
+            onPressed: () => Navigator.maybePop(context),
+          ),
+        ),
+      ),
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Create Account',
+              // ─── Heading ────────────────────────────────────────────────
+              Text(
+                'Create Your Account',
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  color: primaryColor,
+                  letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              const SizedBox(height: 10),
+              Text(
                 'Join our caring community. We are here to support you every step of the way.',
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: textSecondary,
+                  height: 1.5,
+                ),
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 28),
+
+              // ─── Error banner ────────────────────────────────────────────
               if (authState.error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.emergencyContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    authState.error!,
-                    style: const TextStyle(
-                      color: AppColors.emergency,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                _ErrorBanner(message: authState.error!, isDark: isDark),
+                const SizedBox(height: 24),
               ],
-              TextField(
-                controller: _nameController,
-                style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  hintText: 'e.g. Eleanor Vance',
-                  prefixIcon: Icon(Icons.person_outline, size: 28),
+
+              // ─── Full Name ───────────────────────────────────────────────
+              _FieldLabel(label: 'Full Name', isDark: isDark),
+              const SizedBox(height: 8),
+              Semantics(
+                label: 'Full Name',
+                child: TextField(
+                  controller: _nameController,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: 'e.g. Eleanor Vance',
+                    prefixIcon: Icon(Icons.person_outline_rounded, size: 26, color: primaryColor),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.mail_outline, size: 28),
+
+              const SizedBox(height: 22),
+
+              // ─── Email ───────────────────────────────────────────────────
+              _FieldLabel(label: 'Email Address', isDark: isDark),
+              const SizedBox(height: 8),
+              Semantics(
+                label: 'Email Address',
+                child: TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. name@email.com',
+                    prefixIcon: Icon(Icons.mail_outline_rounded, size: 26, color: primaryColor),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(
-                  labelText: 'Phone or Emergency Contact',
-                  prefixIcon: Icon(Icons.phone_outlined, size: 28),
+
+              const SizedBox(height: 22),
+
+              // ─── Phone ───────────────────────────────────────────────────
+              _FieldLabel(label: 'Phone Number', isDark: isDark),
+              const SizedBox(height: 8),
+              Semantics(
+                label: 'Phone Number',
+                child: TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Your phone or emergency contact number',
+                    prefixIcon: Icon(Icons.phone_outlined, size: 26, color: primaryColor),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                style: const TextStyle(fontSize: 18),
-                decoration: const InputDecoration(
-                  labelText: 'Create Password',
-                  prefixIcon: Icon(Icons.lock_outline, size: 28),
-                ),
-              ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
-                value: _acceptedPrivacy,
-                onChanged: (value) {
-                  setState(() => _acceptedPrivacy = value ?? false);
-                },
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                title: const Text(
-                  'I agree to the Privacy Policy. Personal information is protected with secure safeguards.',
-                  style: TextStyle(fontSize: 14),
-                ),
-              ),
-              const SizedBox(height: 12),
-              AccessibleButton(
-                label: authState.isLoading
-                    ? 'Sending code...'
-                    : 'Continue to Verification',
-                semanticLabel: 'Continue to verification',
-                onPressed: authState.isLoading ? null : _handleRegister,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginFormScreen(),
+
+              const SizedBox(height: 22),
+
+              // ─── Password ────────────────────────────────────────────────
+              _FieldLabel(label: 'Create a Password', isDark: isDark),
+              const SizedBox(height: 8),
+              Semantics(
+                label: 'Create a Password',
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'At least 8 characters',
+                    prefixIcon: Icon(Icons.lock_outline_rounded, size: 26, color: primaryColor),
+                    suffixIcon: Semantics(
+                      label: _obscurePassword ? 'Show password' : 'Hide password',
+                      child: IconButton(
+                        tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 26,
+                          color: textSecondary,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                      ),
                     ),
-                  );
-                },
-                child: const Text('Already have an account? Login'),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ─── Privacy checkbox ────────────────────────────────────────
+              Semantics(
+                label: _acceptedPrivacy
+                    ? 'Privacy policy accepted'
+                    : 'I agree to the Privacy Policy — tap to accept',
+                child: InkWell(
+                  onTap: () =>
+                      setState(() => _acceptedPrivacy = !_acceptedPrivacy),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: Checkbox(
+                            value: _acceptedPrivacy,
+                            onChanged: (v) =>
+                                setState(() => _acceptedPrivacy = v ?? false),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.padded,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'I agree to the Privacy Policy. My personal information is stored securely and is only shared with my caregivers.',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: textPrimary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ─── Submit button ───────────────────────────────────────────
+              Semantics(
+                label: authState.isLoading
+                    ? 'Sending verification code, please wait'
+                    : 'Continue to verification',
+                button: true,
+                child: SizedBox(
+                  height: 64,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: authState.isLoading ? null : _handleRegister,
+                    child: authState.isLoading
+                        ? const SizedBox(
+                            width: 26,
+                            height: 26,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Continue to Verification',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ─── Login link ──────────────────────────────────────────────
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginFormScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Already have an account? Log in',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Shared widgets ──────────────────────────────────────────────────────────
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.label, required this.isDark});
+  final String label;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message, required this.isDark});
+  final String message;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
+    final containerColor = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: containerColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: emergencyColor, width: 2),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_rounded, color: emergencyColor, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: emergencyColor,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

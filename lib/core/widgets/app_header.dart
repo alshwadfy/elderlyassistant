@@ -17,12 +17,20 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
+    final successColor = isDark ? AppColorsDark.success : AppColors.success;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final textMuted = isDark ? AppColorsDark.textMuted : AppColors.textMuted;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        color: surfaceColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -37,50 +45,23 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
+                  color: primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const AppLogo(size: 32),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? AppColorsDark.primary : AppColors.primary,
-                        letterSpacing: -0.3,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Assistant Active',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? AppColorsDark.textMuted : AppColors.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: primaryColor,
+                    letterSpacing: -0.3,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Column(
@@ -92,7 +73,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                      color: textSecondary,
                     ),
                   ),
                   Text(
@@ -100,7 +81,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                      color: textPrimary,
                     ),
                   ),
                 ],
@@ -113,21 +94,20 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary,
-                          AppColors.primaryLight,
-                        ],
+                        colors: isDark
+                            ? [AppColorsDark.primary, AppColorsDark.primaryLight]
+                            : [AppColors.primary, AppColors.primaryLight],
                       ),
                     ),
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: primaryContainer,
                       child: Text(
                         userName.isNotEmpty ? userName[0].toUpperCase() : 'A',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: AppColors.primary,
+                          color: primaryColor,
                         ),
                       ),
                     ),
@@ -139,9 +119,12 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: AppColors.success,
+                        color: successColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(
+                          color: surfaceColor,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -157,4 +140,3 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(74);
 }
-

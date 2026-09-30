@@ -13,18 +13,26 @@ class DoctorCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final textMuted = isDark ? AppColorsDark.textMuted : AppColors.textMuted;
+    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
+    final border = isDark ? AppColorsDark.border : AppColors.border;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        color: surface,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColorsDark.border : AppColors.border,
+          color: border,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -39,11 +47,11 @@ class DoctorCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: primaryContainer,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
               ),
-              child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 34),
+              child: Icon(Icons.person_rounded, color: primaryColor, size: 34),
             ),
             const SizedBox(width: 16),
             // Info
@@ -56,40 +64,40 @@ class DoctorCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                      color: textPrimary,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     doctor.type,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: primaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_rounded, size: 16, color: AppColors.textMuted),
+                      Icon(Icons.location_on_rounded, size: 16, color: textMuted),
                       const SizedBox(width: 4),
                       Text(
                         '${doctor.distanceKm} km',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                          color: textSecondary,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text('•', style: TextStyle(color: isDark ? AppColorsDark.textMuted : AppColors.textMuted, fontWeight: FontWeight.bold)),
+                      Text('•', style: TextStyle(color: textMuted, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 8),
                       Text(
                         '${doctor.estimatedMinutes} min',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                          color: textSecondary,
                         ),
                       ),
                     ],
@@ -104,7 +112,7 @@ class DoctorCard extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(88, 48),
                 padding: const EdgeInsets.symmetric(horizontal: 18),
-                backgroundColor: AppColors.primary,
+                backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
@@ -122,4 +130,3 @@ class DoctorCard extends StatelessWidget {
     );
   }
 }
-
