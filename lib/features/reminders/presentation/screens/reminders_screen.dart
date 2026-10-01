@@ -345,223 +345,242 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
       return true;
     }).toList();
 
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+    return Column(
       children: [
-        // ─── Screen Header ───
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, size: 28),
-              tooltip: 'Back',
-              onPressed: () {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 48,
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.medication_rounded, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.medicationReminders,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: textPrimary,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  Text(
-                    l10n.neverMissMed,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // ─── Summary Card Header ───
+        // ─── Static Screen Header ───
         Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(8, 8, 16, 12),
           decoration: BoxDecoration(
             color: isDark ? AppColorsDark.surface : AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? AppColorsDark.border : AppColors.border,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _SummaryStatItem(
-                label: 'Total',
-                count: reminders.length,
-                color: primaryColor,
-                isDark: isDark,
-              ),
-              Container(
-                height: 32,
-                width: 1,
-                color: isDark ? AppColorsDark.border : AppColors.border,
-              ),
-              _SummaryStatItem(
-                label: 'Completed',
-                count: completedCount,
-                color: isDark ? AppColorsDark.success : AppColors.success,
-                isDark: isDark,
-              ),
-              Container(
-                height: 32,
-                width: 1,
-                color: isDark ? AppColorsDark.border : AppColors.border,
-              ),
-              _SummaryStatItem(
-                label: 'Pending',
-                count: pendingCount,
-                color: isDark ? AppColorsDark.warning : AppColors.warning,
-                isDark: isDark,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 14),
-
-        // ─── Time Period Filter Chips ───
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
           child: Row(
             children: [
-              _FilterChipItem(
-                label: l10n.allReminders,
-                icon: Icons.apps_rounded,
-                isSelected: _selectedPeriodFilter == 'all',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedPeriodFilter = 'all'),
+              IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, size: 28),
+                tooltip: 'Back',
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
               ),
-              const SizedBox(width: 8),
-              _FilterChipItem(
-                label: '${l10n.morning} 🌅',
-                icon: Icons.wb_sunny_outlined,
-                isSelected: _selectedPeriodFilter == 'morning',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedPeriodFilter = 'morning'),
+              const SizedBox(width: 4),
+              Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.medication_rounded, color: Colors.white, size: 28),
               ),
-              const SizedBox(width: 8),
-              _FilterChipItem(
-                label: '${l10n.afternoon} ☀️',
-                icon: Icons.wb_sunny_rounded,
-                isSelected: _selectedPeriodFilter == 'afternoon',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedPeriodFilter = 'afternoon'),
-              ),
-              const SizedBox(width: 8),
-              _FilterChipItem(
-                label: '${l10n.evening} 🌆',
-                icon: Icons.wb_twilight_rounded,
-                isSelected: _selectedPeriodFilter == 'evening',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedPeriodFilter = 'evening'),
-              ),
-              const SizedBox(width: 8),
-              _FilterChipItem(
-                label: '${l10n.night} 🌙',
-                icon: Icons.nightlight_round,
-                isSelected: _selectedPeriodFilter == 'night',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedPeriodFilter = 'night'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // ─── List of Medication Cards (Rendered inline in the scroll view) ───
-        if (filteredReminders.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36),
-            child: Center(
-              child: Text(
-                'No reminders found for this period.',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: textSecondary,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.medicationReminders,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    Text(
+                      l10n.neverMissMed,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          )
-        else
-          for (final reminder in filteredReminders)
-            ReminderCard(
-              reminder: reminder,
-              accent: primaryColor,
-              onToggle: () {
-                ref
-                    .read(remindersProvider.notifier)
-                    .toggleStatus(reminder.reminderId);
-              },
-              onSkip: () {
-                ref
-                    .read(remindersProvider.notifier)
-                    .setStatus(reminder.reminderId, 'skipped');
-              },
-              onEdit: () => _showAddEditReminderDialog(
-                context: context,
-                ref: ref,
-                existing: reminder,
-                isDark: isDark,
-              ),
-              onDelete: () => _deleteReminder(context, ref, reminder, isDark),
-            ),
-
-        const SizedBox(height: 12),
-
-        // ─── Add Reminder Button ───
-        ElevatedButton.icon(
-          onPressed: () => _showAddEditReminderDialog(context: context, ref: ref, isDark: isDark),
-          icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
-          label: Text(
-            l10n.addNewReminder,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ],
           ),
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 56),
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
+        ),
+
+        // ─── Scrollable Body ───
+        Expanded(
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+            children: [
+              // ─── Summary Card Header ───
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColorsDark.surface : AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? AppColorsDark.border : AppColors.border,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _SummaryStatItem(
+                      label: 'Total',
+                      count: reminders.length,
+                      color: primaryColor,
+                      isDark: isDark,
+                    ),
+                    Container(
+                      height: 32,
+                      width: 1,
+                      color: isDark ? AppColorsDark.border : AppColors.border,
+                    ),
+                    _SummaryStatItem(
+                      label: 'Completed',
+                      count: completedCount,
+                      color: isDark ? AppColorsDark.success : AppColors.success,
+                      isDark: isDark,
+                    ),
+                    Container(
+                      height: 32,
+                      width: 1,
+                      color: isDark ? AppColorsDark.border : AppColors.border,
+                    ),
+                    _SummaryStatItem(
+                      label: 'Pending',
+                      count: pendingCount,
+                      color: isDark ? AppColorsDark.warning : AppColors.warning,
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // ─── Time Period Filter Chips ───
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    _FilterChipItem(
+                      label: l10n.allReminders,
+                      icon: Icons.apps_rounded,
+                      isSelected: _selectedPeriodFilter == 'all',
+                      isDark: isDark,
+                      onTap: () => setState(() => _selectedPeriodFilter = 'all'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChipItem(
+                      label: '${l10n.morning} 🌅',
+                      icon: Icons.wb_sunny_outlined,
+                      isSelected: _selectedPeriodFilter == 'morning',
+                      isDark: isDark,
+                      onTap: () => setState(() => _selectedPeriodFilter = 'morning'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChipItem(
+                      label: '${l10n.afternoon} ☀️',
+                      icon: Icons.wb_sunny_rounded,
+                      isSelected: _selectedPeriodFilter == 'afternoon',
+                      isDark: isDark,
+                      onTap: () => setState(() => _selectedPeriodFilter = 'afternoon'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChipItem(
+                      label: '${l10n.evening} 🌆',
+                      icon: Icons.wb_twilight_rounded,
+                      isSelected: _selectedPeriodFilter == 'evening',
+                      isDark: isDark,
+                      onTap: () => setState(() => _selectedPeriodFilter = 'evening'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChipItem(
+                      label: '${l10n.night} 🌙',
+                      icon: Icons.nightlight_round,
+                      isSelected: _selectedPeriodFilter == 'night',
+                      isDark: isDark,
+                      onTap: () => setState(() => _selectedPeriodFilter = 'night'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ─── List of Medication Cards ───
+              if (filteredReminders.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 36),
+                  child: Center(
+                    child: Text(
+                      'No reminders found for this period.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: textSecondary,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                for (final reminder in filteredReminders)
+                  ReminderCard(
+                    reminder: reminder,
+                    accent: primaryColor,
+                    onToggle: () {
+                      ref
+                          .read(remindersProvider.notifier)
+                          .toggleStatus(reminder.reminderId);
+                    },
+                    onSkip: () {
+                      ref
+                          .read(remindersProvider.notifier)
+                          .setStatus(reminder.reminderId, 'skipped');
+                    },
+                    onEdit: () => _showAddEditReminderDialog(
+                      context: context,
+                      ref: ref,
+                      existing: reminder,
+                      isDark: isDark,
+                    ),
+                    onDelete: () => _deleteReminder(context, ref, reminder, isDark),
+                  ),
+
+              const SizedBox(height: 12),
+
+              // ─── Add Reminder Button ───
+              ElevatedButton.icon(
+                onPressed: () => _showAddEditReminderDialog(context: context, ref: ref, isDark: isDark),
+                icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
+                label: Text(
+                  l10n.addNewReminder,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

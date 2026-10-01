@@ -21,169 +21,168 @@ class ProfileScreen extends ConsumerWidget {
     final isArabic = currentLocale.languageCode == 'ar';
 
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
     final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
     final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
     final surface = isDark ? AppColorsDark.surface : AppColors.surface;
     final border = isDark ? AppColorsDark.border : AppColors.border;
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.profileSettings,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            decoration: BoxDecoration(
-              color: surface,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: border,
-                width: 1.5,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ─── Static Profile Header ───
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          decoration: BoxDecoration(
+            color: surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.profileSettings,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: textPrimary,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? AppColorsDark.background : AppColors.background,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: border, width: 1.5),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      // Elderly photo avatar
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: Image.asset(
+                          'assets/elderly-assistant-photo.png',
+                          width: 68,
+                          height: 68,
+                          fit: BoxFit.cover,
+                          semanticLabel: 'User profile photo',
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Adel Ahmed',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '+20 10 1234 5678',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          showDemoSnackBar(context, 'Edit profile will use the API later');
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: primaryColor,
+                        ),
+                        child: Text(
+                          l10n.edit,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ─── Scrollable Settings ───
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ─── Settings Controls ───
+                _SettingsSwitchTile(
+                  icon: Icons.language_rounded,
+                  title: l10n.language,
+                  subtitle: isArabic ? l10n.arabic : l10n.english,
+                  value: isArabic,
+                  isDark: isDark,
+                  onChanged: (val) {
+                    ref.read(localeProvider.notifier).toggleLanguage();
+                  },
+                  activeText: 'العربية',
+                  inactiveText: 'English',
+                ),
+                _SettingsSwitchTile(
+                  icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  title: l10n.appearance,
+                  subtitle: isDark ? l10n.darkMode : l10n.lightMode,
+                  value: isDark,
+                  isDark: isDark,
+                  onChanged: (val) {
+                    ref.read(themeModeProvider.notifier).toggleTheme();
+                  },
+                  activeText: l10n.darkMode,
+                  inactiveText: l10n.lightMode,
+                ),
+
+                const SizedBox(height: 8),
+
+                _SettingsItem(
+                  icon: Icons.notifications_active_rounded,
+                  title: l10n.notifications,
+                  subtitle: l10n.notificationsSub,
+                  isDark: isDark,
+                  onTap: () => showDemoSnackBar(context, 'Notifications (demo)'),
+                ),
+                _SettingsItem(
+                  icon: Icons.security_rounded,
+                  title: l10n.privacySecurity,
+                  subtitle: l10n.privacySub,
+                  isDark: isDark,
+                  onTap: () => showDemoSnackBar(context, 'Privacy settings (demo)'),
+                ),
+                _SettingsItem(
+                  icon: Icons.info_rounded,
+                  title: l10n.about,
+                  subtitle: l10n.aboutSub,
+                  isDark: isDark,
+                  onTap: () => showDemoSnackBar(context, 'AI Elderly Assistant v2.0.0'),
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [AppColorsDark.primary, AppColorsDark.primaryLight]
-                            : [AppColors.primary, AppColors.primaryLight],
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      radius: 34,
-                      backgroundColor: primaryContainer,
-                      child: Icon(
-                        Icons.person_rounded,
-                        size: 40,
-                        color: primaryColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Adel Ahmed',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '+20 10 1234 5678',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      showDemoSnackBar(context, 'Edit profile will use the API later');
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: primaryColor,
-                    ),
-                    child: Text(
-                      l10n.edit,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
-          const SizedBox(height: 24),
-
-          // ─── Settings Controls ───
-          _SettingsSwitchTile(
-            icon: Icons.language_rounded,
-            title: l10n.language,
-            subtitle: isArabic ? l10n.arabic : l10n.english,
-            value: isArabic,
-            isDark: isDark,
-            onChanged: (val) {
-              ref.read(localeProvider.notifier).toggleLanguage();
-            },
-            activeText: 'العربية',
-            inactiveText: 'English',
-          ),
-          _SettingsSwitchTile(
-            icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-            title: l10n.appearance,
-            subtitle: isDark ? l10n.darkMode : l10n.lightMode,
-            value: isDark,
-            isDark: isDark,
-            onChanged: (val) {
-              ref.read(themeModeProvider.notifier).toggleTheme();
-            },
-            activeText: l10n.darkMode,
-            inactiveText: l10n.lightMode,
-          ),
-
-          const SizedBox(height: 8),
-
-          _SettingsItem(
-            icon: Icons.volume_up_rounded,
-            title: l10n.voiceSettings,
-            subtitle: l10n.voiceSettingsSub,
-            isDark: isDark,
-            onTap: () => showDemoSnackBar(context, 'Voice settings (demo)'),
-          ),
-          _SettingsItem(
-            icon: Icons.notifications_active_rounded,
-            title: l10n.notifications,
-            subtitle: l10n.notificationsSub,
-            isDark: isDark,
-            onTap: () => showDemoSnackBar(context, 'Notifications (demo)'),
-          ),
-          _SettingsItem(
-            icon: Icons.security_rounded,
-            title: l10n.privacySecurity,
-            subtitle: l10n.privacySub,
-            isDark: isDark,
-            onTap: () => showDemoSnackBar(context, 'Privacy settings (demo)'),
-          ),
-          _SettingsItem(
-            icon: Icons.info_rounded,
-            title: l10n.about,
-            subtitle: l10n.aboutSub,
-            isDark: isDark,
-            onTap: () => showDemoSnackBar(context, 'AI Elderly Assistant v2.0.0'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

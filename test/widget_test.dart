@@ -12,8 +12,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Get Started'), findsOneWidget);
-    // Button text changed to full literal sentence per ui.md spec
-    expect(find.text('Log In to Existing Account'), findsOneWidget);
+    // Button text simplified per new design
+    expect(find.text('Log In'), findsOneWidget);
     expect(find.textContaining('Your voice'), findsOneWidget);
   });
 

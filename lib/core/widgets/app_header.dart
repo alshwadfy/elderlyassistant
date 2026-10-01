@@ -22,7 +22,6 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final successColor = isDark ? AppColorsDark.success : AppColors.success;
     final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
     final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-    final textMuted = isDark ? AppColorsDark.textMuted : AppColors.textMuted;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
 
     return Container(
@@ -99,16 +98,13 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                             : [AppColors.primary, AppColors.primaryLight],
                       ),
                     ),
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: primaryContainer,
-                      child: Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : 'A',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: primaryColor,
-                        ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/elderly-assistant-photo.png',
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        semanticLabel: 'User profile photo',
                       ),
                     ),
                   ),
