@@ -1,8 +1,13 @@
-import 'package:elderlyassistant/main.dart';
-import 'package:elderlyassistant/core/widgets/accessible_button.dart';
-import 'package:elderlyassistant/core/widgets/error_view.dart';
+import 'package:elderlyassistant/core/l10n/app_localizations.dart';
 import 'package:elderlyassistant/core/theme/app_colors.dart';
+import 'package:elderlyassistant/core/widgets/accessible_button.dart';
+import 'package:elderlyassistant/core/widgets/app_bottom_nav_bar.dart';
+import 'package:elderlyassistant/core/widgets/error_view.dart';
+import 'package:elderlyassistant/features/doctors/presentation/screens/appointments_screen.dart';
+import 'package:elderlyassistant/features/home/presentation/screens/home_shell_screen.dart';
+import 'package:elderlyassistant/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -86,4 +91,63 @@ void main() {
     // Updated from old Figma blue #3B5BDB to spec-mandated #1647AD
     expect(AppColors.primary, const Color(0xFF1647AD));
   });
+
+  testWidgets('AppBottomNavBar displays Arabic labels when locale is ar', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ar'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Scaffold(
+          bottomNavigationBar: AppBottomNavBar(
+            currentIndex: 0,
+            onTap: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('الرئيسية'), findsOneWidget);
+    expect(find.text('المواعيد'), findsOneWidget);
+    expect(find.text('التذكيرات'), findsOneWidget);
+    expect(find.text('المزيد'), findsOneWidget);
+  });
+
+  testWidgets('AppointmentsScreen back button navigates back to Home', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HomeShellScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Switch to Schedule tab
+    await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppointmentsScreen), findsOneWidget);
+
+    // Tap Back button on Appointments screen
+    await tester.tap(find.byType(BackButtonIcon));
+    await tester.pumpAndSettle();
+
+    // Should return to Home
+    expect(find.text('Good morning, Adel'), findsOneWidget);
+  });
 }
+

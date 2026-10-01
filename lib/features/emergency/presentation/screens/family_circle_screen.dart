@@ -55,11 +55,16 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen>
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 28),
-                tooltip: 'Back',
+                icon: const BackButtonIcon(),
+                tooltip: l10n.back,
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/home',
+                      (route) => false,
+                    );
                   }
                 },
               ),

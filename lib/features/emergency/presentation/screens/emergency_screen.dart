@@ -404,30 +404,34 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 24, 4),
       child: Row(
         children: [
           Semantics(
-            label: 'Go back',
+            label: l10n.goBack,
             button: true,
             child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_rounded,
-                size: 30,
-                color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
-              ),
-              tooltip: 'Go back',
+              icon: const BackButtonIcon(),
+              iconSize: 30,
+              color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+              tooltip: l10n.goBack,
               onPressed: () {
                 if (Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/home',
+                    (route) => false,
+                  );
                 }
               },
             ),
           ),
           Expanded(
             child: Text(
-              'Emergency Help',
+              l10n.emergencyHelp,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 22,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 
 class AppBottomNavBar extends StatelessWidget {
@@ -11,10 +12,9 @@ class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const labels = ['Home', 'Schedule', 'Reminders', 'More'];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -51,26 +51,26 @@ class AppBottomNavBar extends StatelessWidget {
               NavigationDestination(
                 icon: Icon(Icons.home_outlined, size: 26, color: navInactive),
                 selectedIcon: Icon(Icons.home_rounded, color: navActive, size: 28),
-                label: 'Home',
-                tooltip: 'Home',
+                label: l10n.navHome,
+                tooltip: l10n.navHome,
               ),
               NavigationDestination(
                 icon: Icon(Icons.calendar_today_outlined, size: 24, color: navInactive),
                 selectedIcon: Icon(Icons.calendar_month_rounded, color: navActive, size: 26),
-                label: 'Schedule',
-                tooltip: 'Schedule and appointments',
+                label: l10n.navSchedule,
+                tooltip: l10n.navSchedule,
               ),
               NavigationDestination(
                 icon: Icon(Icons.notifications_none_outlined, size: 26, color: navInactive),
                 selectedIcon: Icon(Icons.notifications_rounded, color: navActive, size: 28),
-                label: 'Reminders',
-                tooltip: 'Medication reminders',
+                label: l10n.navReminders,
+                tooltip: l10n.navReminders,
               ),
               NavigationDestination(
                 icon: Icon(Icons.more_horiz_rounded, size: 26, color: navInactive),
                 selectedIcon: Icon(Icons.more_horiz_rounded, color: navActive, size: 28),
-                label: 'More',
-                tooltip: 'Profile and settings',
+                label: l10n.navMore,
+                tooltip: l10n.navMore,
               ),
             ],
           ),

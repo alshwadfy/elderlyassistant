@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/demo_snackbar.dart';
 import '../../data/models/appointment_model.dart';
@@ -86,6 +87,7 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final doctors = _visible(ref.watch(doctorsProvider));
@@ -104,11 +106,16 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 28),
-                tooltip: 'Back',
+                icon: const BackButtonIcon(),
+                tooltip: l10n.back,
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/home',
+                      (route) => false,
+                    );
                   }
                 },
               ),
