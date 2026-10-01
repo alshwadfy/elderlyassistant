@@ -98,13 +98,16 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                             : [AppColors.primary, AppColors.primaryLight],
                       ),
                     ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/elderly-assistant-photo.png',
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                        semanticLabel: 'User profile photo',
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: primaryContainer,
+                      child: Text(
+                        userName.isNotEmpty ? userName[0].toUpperCase() : 'A',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: primaryColor,
+                        ),
                       ),
                     ),
                   ),

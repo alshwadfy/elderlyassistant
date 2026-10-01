@@ -224,15 +224,17 @@ class _GreetingBanner extends StatelessWidget {
               ],
             ),
           ),
-          // Elderly photo
-          ClipRRect(
-            borderRadius: BorderRadius.circular(60),
-            child: Image.asset(
-              'assets/elderly-assistant-photo.png',
-              width: 90,
-              height: 90,
-              fit: BoxFit.cover,
-              semanticLabel: 'Elderly woman using voice assistant',
+          // Decorative icon
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: isDark ? 0.2 : 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.assistant_rounded,
+              size: 36,
+              color: primaryColor,
             ),
           ),
         ],

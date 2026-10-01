@@ -21,6 +21,7 @@ class ProfileScreen extends ConsumerWidget {
     final isArabic = currentLocale.languageCode == 'ar';
 
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
     final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
     final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
     final surface = isDark ? AppColorsDark.surface : AppColors.surface;
@@ -65,15 +66,17 @@ class ProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(14),
                   child: Row(
                     children: [
-                      // Elderly photo avatar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: Image.asset(
-                          'assets/elderly-assistant-photo.png',
-                          width: 68,
-                          height: 68,
-                          fit: BoxFit.cover,
-                          semanticLabel: 'User profile photo',
+                      Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          color: primaryContainer,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Icon(
+                          Icons.person_rounded,
+                          size: 40,
+                          color: primaryColor,
                         ),
                       ),
                       const SizedBox(width: 16),

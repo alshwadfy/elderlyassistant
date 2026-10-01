@@ -4,7 +4,11 @@ import '../../../../core/widgets/app_logo.dart';
 import 'login_form_screen.dart';
 import 'onboarding_screen.dart';
 
-/// Login / Welcome screen — matches the Figma design with the elderly photo.
+/// Login / Welcome screen — matches the Figma UI (media_1790862407812.png).
+///
+/// Top: AI Elderly Assistant logo
+/// Center: "Your voice. Our support." headline + subtitle + "Get Started" & "Log In" buttons
+/// Bottom: Photo of elderly woman holding phone with audio wave badge.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -14,177 +18,199 @@ class LoginScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-    final bgColor = isDark ? AppColorsDark.background : AppColors.background;
+    final textPrimary = isDark ? AppColorsDark.textPrimary : const Color(0xFF1E3A8A);
+    final textSecondary = isDark ? AppColorsDark.textSecondary : const Color(0xFF4B6B94);
+    final bgColor = isDark ? AppColorsDark.background : const Color(0xFFF0F5FA);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            // ─── Elderly Photo (top half) ───────────────────────────────────
-            Expanded(
-              flex: 5,
-              child: Stack(
-                fit: StackFit.expand,
+            // ─── Header: App Logo ───
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Row(
                 children: [
-                  Image.asset(
-                    'assets/elderly-assistant-photo.png',
-                    fit: BoxFit.cover,
-                    semanticLabel: 'Elderly woman using AI voice assistant',
-                  ),
-                  // Gradient overlay so text is readable
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          bgColor.withValues(alpha: 0.85),
-                          bgColor,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: const [0.45, 0.78, 1.0],
-                      ),
-                    ),
-                  ),
-                  // Logo in top left
-                  Positioned(
-                    top: 16,
-                    left: 20,
-                    child: Row(
-                      children: [
-                        const AppLogo(size: 36),
-                        const SizedBox(width: 10),
-                        Text(
-                          'AI Elderly Assistant',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Tagline over the gradient
-                  Positioned(
-                    bottom: 16,
-                    left: 24,
-                    right: 24,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Your voice. Our support.',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            color: primaryColor,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Simple help for a safer, healthier and more connected life.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: textSecondary,
-                            height: 1.45,
-                          ),
-                        ),
-                      ],
+                  const AppLogo(size: 38),
+                  const SizedBox(width: 12),
+                  Text(
+                    'AI Elderly Assistant',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: textPrimary,
                     ),
                   ),
                 ],
               ),
             ),
 
-            // ─── Action Buttons (bottom) ─────────────────────────────────────
+            const SizedBox(height: 24),
+
+            // ─── Headline & Subtitle ───
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  Text(
+                    'Your voice. Our support.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: textPrimary,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Simple help for a safer,\nhealthier and more connected life.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: textSecondary,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ─── Action Buttons ───
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  // Get Started (filled primary)
+                  Semantics(
+                    button: true,
+                    label: 'Get started and set up your assistant',
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const OnboardingScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Get Started',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Login (white with blue outline)
+                  Semantics(
+                    button: true,
+                    label: 'Log in to your existing account',
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: isDark ? AppColorsDark.surface : Colors.white,
+                          foregroundColor: primaryColor,
+                          side: BorderSide(
+                            color: primaryColor.withValues(alpha: 0.6),
+                            width: 1.8,
+                          ),
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginFormScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Log In',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ─── Elderly Woman Photo at Bottom ───
             Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(28, 20, 28, 24),
-                child: Column(
-                  children: [
-                    const Spacer(),
-
-                    // Get Started
-                    Semantics(
-                      label: 'Get started and set up your assistant',
-                      button: true,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 64,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            elevation: 3,
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const OnboardingScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Get Started',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ),
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Image.asset(
+                        'assets/elderly-assistant-photo.png',
+                        fit: BoxFit.contain,
+                        alignment: Alignment.bottomCenter,
+                        semanticLabel: 'Elderly woman holding phone with AI voice assistant',
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 14),
-
-                    // Log In
-                    Semantics(
-                      label: 'Log in to your existing account',
-                      button: true,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 64,
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: primaryColor,
-                            side: BorderSide(color: primaryColor, width: 2.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
+                  // Floating audio wave badge next to the phone
+                  Positioned(
+                    right: 48,
+                    bottom: 120,
+                    child: Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withValues(alpha: 0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginFormScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Log In',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.graphic_eq_rounded,
+                        color: primaryColor,
+                        size: 32,
                       ),
                     ),
-
-                    const SizedBox(height: 12),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

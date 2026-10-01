@@ -222,6 +222,62 @@ class AppLocalizations {
   String get callFamily => _t('callFamily');
   String get aiVoiceCompanion => _t('aiVoiceCompanion');
 
+  // ─── Accessibility Menu ───
+  String get accessibilityMenu => _t('accessibilityMenu');
+  String get accessibilityFabTooltip => _t('accessibilityFabTooltip');
+  String get fontSize => _t('fontSize');
+  String get increaseFontSize => _t('increaseFontSize');
+  String get decreaseFontSize => _t('decreaseFontSize');
+  String get textSpacing => _t('textSpacing');
+  String get increaseTextSpacing => _t('increaseTextSpacing');
+  String get decreaseTextSpacing => _t('decreaseTextSpacing');
+  String get contrast => _t('contrast');
+  String get increaseContrast => _t('increaseContrast');
+  String get decreaseContrast => _t('decreaseContrast');
+  String get highContrastMode => _t('highContrastMode');
+  String get readAloud => _t('readAloud');
+  String get readAloudSpeaking => _t('readAloudSpeaking');
+  String get resetDefaults => _t('resetDefaults');
+  String get normal => _t('normal');
+  String get large => _t('large');
+  String get extraLarge => _t('extraLarge');
+  String get onText => _t('onText');
+  String get offText => _t('offText');
+
+  // ─── Doctor Search & Appointment Modals ───
+  String get doctorName => _t('doctorName');
+  String get specialty => _t('specialty');
+  String get dateTime => _t('dateTime');
+  String get searchSpecialtyHint => _t('searchSpecialtyHint');
+  String get connectedFamilySubtitle => _t('connectedFamilySubtitle');
+  String get sendEmergencyAlert => _t('sendEmergencyAlert');
+  String get sendEmergencyAlertDesc => _t('sendEmergencyAlertDesc');
+  String get yesSendAlert => _t('yesSendAlert');
+  String get noCancel => _t('noCancel');
+  String get back => _t('back');
+  String get takeMedsPrompt => _t('takeMedsPrompt');
+  String get findDoctorPrompt => _t('findDoctorPrompt');
+  String get callFamilyPrompt => _t('callFamilyPrompt');
+  String get noDoctorsFound => _t('noDoctorsFound');
+
+  // ─── Emergency Cancel Flow ───
+  String get cancelAlertQuestion => _t('cancelAlertQuestion');
+  String get cancelAlertBody => _t('cancelAlertBody');
+  String get yesCancelAlert => _t('yesCancelAlert');
+  String get noKeepAlertActive => _t('noKeepAlertActive');
+  String get alertCancelledStaySafe => _t('alertCancelledStaySafe');
+  String get goBack => _t('goBack');
+  String get helpIsOnWay => _t('helpIsOnWay');
+
+  // ─── Reminders extra ───
+  String get total => _t('total');
+  String get change => _t('change');
+  String get noRemindersForPeriod => _t('noRemindersForPeriod');
+  String get reminderUpdated => _t('reminderUpdated');
+  String get newReminderAdded => _t('newReminderAdded');
+  String get reminderDeleted => _t('reminderDeleted');
+  String get logInToExistingAccount => _t('logInToExistingAccount');
+
   // ─── Misc ───
   String get km => _t('km');
   String get min => _t('min');
@@ -257,6 +313,19 @@ class AppLocalizations {
 
   String get selectTime =>
       _languageCode == 'ar' ? 'اختر وقت الموعد' : 'Select Appointment Time';
+
+  String daysUnit(int days) =>
+      _languageCode == 'ar' ? '$days أيام' : '$days Days';
+
+  String sosAlertDispatched(String time) =>
+      _languageCode == 'ar'
+          ? 'تم إرسال تنبيه SOS في $time لجميع أفراد العائلة ومقدمي الرعاية!'
+          : 'SOS alert dispatched at $time to all family members & caregivers!';
+
+  String alertSentFamilyNotified(String time) =>
+      _languageCode == 'ar'
+          ? 'تم إرسال التنبيه في $time. تم إخطار العائلة.'
+          : 'Alert sent at $time. Family notified.';
 
   // ───── English Strings ─────
   static const Map<String, String> _en = {
@@ -438,6 +507,9 @@ class AppLocalizations {
     'listening': 'Listening...',
     'processing': 'Processing...',
     'speaking': 'Speaking...',
+    'takeMedsPrompt': '💊 Take medications',
+    'findDoctorPrompt': '🩺 Find a doctor nearby',
+    'callFamilyPrompt': '📞 Call Family',
 
     // Connection
     'reconnecting': 'Reconnecting to live updates…',
@@ -455,6 +527,59 @@ class AppLocalizations {
     'bookDoctor': 'Book Doctor',
     'callFamily': 'Call Family',
     'aiVoiceCompanion': 'AI Voice Companion',
+
+    // Accessibility
+    'accessibilityMenu': 'Accessibility Quick Actions',
+    'accessibilityFabTooltip': 'Open Accessibility Menu',
+    'fontSize': 'Font Size',
+    'increaseFontSize': 'Increase Font Size',
+    'decreaseFontSize': 'Decrease Font Size',
+    'textSpacing': 'Text Spacing',
+    'increaseTextSpacing': 'Increase Spacing',
+    'decreaseTextSpacing': 'Decrease Spacing',
+    'contrast': 'Contrast',
+    'increaseContrast': 'Increase Contrast',
+    'decreaseContrast': 'Decrease Contrast',
+    'highContrastMode': 'High Contrast Mode',
+    'readAloud': 'Read Aloud',
+    'readAloudSpeaking': 'Reading current screen aloud...',
+    'resetDefaults': 'Reset to Defaults',
+    'normal': 'Normal',
+    'large': 'Large',
+    'extraLarge': 'Extra Large',
+    'onText': 'On',
+    'offText': 'Off',
+
+    // Doctor & Emergency
+    'doctorName': 'Doctor Name',
+    'specialty': 'Specialty',
+    'dateTime': 'Date & Time',
+    'searchSpecialtyHint': 'Search by specialty (e.g. Cardiology)',
+    'connectedFamilySubtitle': 'Connected family caregivers & access requests',
+    'sendEmergencyAlert': 'Send Emergency Alert?',
+    'sendEmergencyAlertDesc':
+        'This will immediately notify your family members and caregivers that you need help. Are you sure you want to send the alert?',
+    'yesSendAlert': 'Yes, Send Alert',
+    'noCancel': 'No, Cancel',
+    'noDoctorsFound': 'No doctors match this search.',
+
+    // Emergency cancel flow
+    'cancelAlertQuestion': 'Cancel Emergency Alert?',
+    'cancelAlertBody': 'Are you sure you want to cancel the emergency alert? Your family members will be notified that you are okay.',
+    'yesCancelAlert': 'Yes, Cancel Alert',
+    'noKeepAlertActive': 'No, Keep Alert Active',
+    'alertCancelledStaySafe': 'Emergency alert cancelled. Stay safe!',
+    'goBack': 'Go back',
+    'helpIsOnWay': 'Help is on the way',
+
+    // Reminders extra
+    'total': 'Total',
+    'change': 'Change',
+    'noRemindersForPeriod': 'No reminders found for this period.',
+    'reminderUpdated': 'Reminder updated',
+    'newReminderAdded': 'New reminder added',
+    'reminderDeleted': 'Reminder deleted',
+    'logInToExistingAccount': 'Log In to Existing Account',
   };
 
   // ───── Arabic Strings ─────
@@ -630,6 +755,9 @@ class AppLocalizations {
     'listening': 'جارٍ الاستماع...',
     'processing': 'جارٍ المعالجة...',
     'speaking': 'جارٍ التحدث...',
+    'takeMedsPrompt': '💊 تناول الأدوية',
+    'findDoctorPrompt': '🩺 ابحث عن طبيب قريب',
+    'callFamilyPrompt': '📞 الاتصال بالعائلة',
 
     // Connection
     'reconnecting': 'جارٍ إعادة الاتصال بالتحديثات الحية…',
@@ -647,6 +775,59 @@ class AppLocalizations {
     'bookDoctor': 'حجز طبيب',
     'callFamily': 'الاتصال بالعائلة',
     'aiVoiceCompanion': 'المساعد الصوتي الذكي',
+
+    // Accessibility
+    'accessibilityMenu': 'إجراءات سهولة الاستخدام السريعة',
+    'accessibilityFabTooltip': 'فتح قائمة سهولة الاستخدام',
+    'fontSize': 'حجم الخط',
+    'increaseFontSize': 'تكبير الخط',
+    'decreaseFontSize': 'تصغير الخط',
+    'textSpacing': 'تباعد النصوص',
+    'increaseTextSpacing': 'زيادة التباعد',
+    'decreaseTextSpacing': 'تقليل التباعد',
+    'contrast': 'التباين',
+    'increaseContrast': 'زيادة التباين',
+    'decreaseContrast': 'تقليل التباين',
+    'highContrastMode': 'وضع التباين العالي',
+    'readAloud': 'القراءة الصوتية',
+    'readAloudSpeaking': 'جاري قراءة الشاشة الحالية بصوت مسموع...',
+    'resetDefaults': 'إعادة ضبط الإعدادات',
+    'normal': 'عادي',
+    'large': 'كبير',
+    'extraLarge': 'كبير جداً',
+    'onText': 'مفعل',
+    'offText': 'معطل',
+
+    // Doctor & Emergency
+    'doctorName': 'اسم الطبيب',
+    'specialty': 'التخصص',
+    'dateTime': 'التاريخ والوقت',
+    'searchSpecialtyHint': 'ابحث بالتخصص (مثال: أمراض القلب)',
+    'connectedFamilySubtitle': 'مقدمو الرعاية المتصلون وطلبات الانضمام',
+    'sendEmergencyAlert': 'إرسال تنبيه طوارئ؟',
+    'sendEmergencyAlertDesc':
+        'سيتم إشعار أفراد عائلتك ومقدمي الرعاية فوراً بأنك بحاجة للمساعدة. هل أنت متأكد من إرسال التنبيه؟',
+    'yesSendAlert': 'نعم، أرسل التنبيه',
+    'noCancel': 'لا، إلغاء',
+    'noDoctorsFound': 'لم يتم العثور على أطباء يطابقون هذا البحث.',
+
+    // Emergency cancel flow
+    'cancelAlertQuestion': 'إلغاء تنبيه الطوارئ؟',
+    'cancelAlertBody': 'هل أنت متأكد من إلغاء تنبيه الطوارئ؟ سيتم إشعار أفراد عائلتك بأنك بخير.',
+    'yesCancelAlert': 'نعم، إلغاء التنبيه',
+    'noKeepAlertActive': 'لا، إبقاء التنبيه نشطاً',
+    'alertCancelledStaySafe': 'تم إلغاء تنبيه الطوارئ. ابقَ بأمان!',
+    'goBack': 'رجوع',
+    'helpIsOnWay': 'المساعدة في الطريق',
+
+    // Reminders extra
+    'total': 'الإجمالي',
+    'change': 'تغيير',
+    'noRemindersForPeriod': 'لا توجد تذكيرات لهذه الفترة.',
+    'reminderUpdated': 'تم تحديث التذكير',
+    'newReminderAdded': 'تمت إضافة تذكير جديد',
+    'reminderDeleted': 'تم حذف التذكير',
+    'logInToExistingAccount': 'تسجيل الدخول لحساب موجود',
   };
 }
 

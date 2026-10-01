@@ -224,12 +224,22 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
         appointments.where((a) => a.status == 'Upcoming').toList();
     final past = appointments.where((a) => a.status == 'Past' || a.status == 'Cancelled').toList();
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      children: [
+        // ─── Static Screen Header (matches RemindersScreen exactly) ───
+        Container(
+          padding: const EdgeInsets.fromLTRB(8, 8, 16, 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColorsDark.surface : AppColors.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back_rounded, size: 28),
@@ -240,8 +250,24 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                   }
                 },
               ),
-              const SizedBox(width: 8),
-              _CalendarBadge(isDark: isDark),
+              const SizedBox(width: 4),
+              Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 28),
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -250,7 +276,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                     Text(
                       l10n.myAppointments,
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: textPrimary,
                         letterSpacing: -0.3,
@@ -259,7 +285,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                     Text(
                       l10n.manageAppointments,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: textSecondary,
                       ),
@@ -269,126 +295,125 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
               ),
             ],
           ),
-          const SizedBox(height: 18),
-          Container(
+        ),
+
+        // ─── Compact TabBar ───
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+          child: Container(
+            height: 44,
             decoration: BoxDecoration(
               color: isDark ? AppColorsDark.surface : AppColors.chipUnselected,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(4),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
                 color: primaryColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+                    color: primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               labelColor: Colors.white,
               unselectedLabelColor: textSecondary,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
               tabs: [
                 Tab(text: '${l10n.upcoming} (${upcoming.length})'),
-                Tab(text: l10n.past),
+                Tab(text: '${l10n.past} (${past.length})'),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _AppointmentList(items: upcoming),
-                _AppointmentList(items: past),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          ElevatedButton.icon(
-            onPressed: () => _showAddAppointmentDialog(isDark),
-            icon: const Icon(Icons.add_circle_outline_rounded, size: 26),
-            label: Text(
-              l10n.addNewAppointment,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 56),
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+        ),
+
+        // ─── Scrollable Tab Content ───
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _AppointmentList(
+                items: upcoming,
+                onAddPressed: () => _showAddAppointmentDialog(isDark),
               ),
-            ),
+              _AppointmentList(
+                items: past,
+                onAddPressed: () => _showAddAppointmentDialog(isDark),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CalendarBadge extends StatelessWidget {
-  const _CalendarBadge({required this.isDark});
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
-
-    return Container(
-      width: 52,
-      height: 52,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: primaryColor.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Icon(Icons.calendar_month_rounded, color: primaryColor, size: 28),
+        ),
+      ],
     );
   }
 }
 
 class _AppointmentList extends StatelessWidget {
-  const _AppointmentList({required this.items});
+  const _AppointmentList({
+    required this.items,
+    required this.onAddPressed,
+  });
 
   final List<AppointmentModel> items;
+  final VoidCallback onAddPressed;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    if (items.isEmpty) {
-      return Center(
-        child: Text(
-          l10n.noAppointments,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      children: [
+        if (items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: Text(
+                l10n.noAppointments,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: textSecondary,
+                ),
+              ),
+            ),
+          )
+        else
+          for (final item in items)
+            _AppointmentCard(appt: item),
+
+        const SizedBox(height: 12),
+
+        // ─── Add Appointment Button (scrolls inside list, matches RemindersScreen) ───
+        ElevatedButton.icon(
+          onPressed: onAddPressed,
+          icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
+          label: Text(
+            l10n.addNewAppointment,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 56),
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
           ),
         ),
-      );
-    }
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      itemCount: items.length,
-      itemBuilder: (context, index) => _AppointmentCard(appt: items[index]),
+      ],
     );
   }
 }

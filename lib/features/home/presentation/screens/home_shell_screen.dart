@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/socket/socket_providers.dart';
 import '../../../../core/socket/socket_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/accessibility_floating_button.dart';
 import '../../../../core/widgets/app_bottom_nav_bar.dart';
 import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/connection_status_banner.dart';
@@ -109,6 +110,7 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
           ),
         ],
       ),
+      floatingActionButton: const AccessibilityFloatingButton(),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTap,
