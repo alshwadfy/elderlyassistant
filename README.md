@@ -1,10 +1,10 @@
 # Rafiq (رفيق) — AI Elderly Assistant (Mobile Client)
 
-A mobile companion engineered specifically for older adults and family caregivers, designed with accessibility-first principles, large visual targets, and bilingual (Arabic/English) support.
+A voice-first mobile companion engineered specifically for older adults and family caregivers, built with accessibility-first principles, large touch targets, and bilingual (Arabic/English) support.
 
 > **Graduation Project** | Alexandria National University (Faculty of Engineering)  
-> **Team Size**: 4 members  
-> **Repository Scope**: Flutter Mobile Client Application
+> **Team Size**: 4 members (Led team of 4 and built the entire Flutter client)  
+> **Repository Scope**: Complete Flutter Mobile Client Application
 
 ---
 
@@ -13,60 +13,65 @@ A mobile companion engineered specifically for older adults and family caregiver
 | Layer | Technology | Usage in Codebase |
 | :--- | :--- | :--- |
 | **Framework** | Flutter (Dart 3) | Cross-platform mobile client |
-| **State Management** | **Flutter Riverpod** (`v2.6.1`) | `ConsumerWidget`, `StateNotifierProvider`, reactive state |
-| **Networking** | **Socket.io Client** (`v3.0.2`) | Real-time event streaming and connection management |
-| **Localization** | `flutter_localizations` | Native Arabic and English support |
-| **Design System** | Custom Flutter Material 3 | Accessible typography, high-contrast themes, dynamic font scaling |
+| **State Management** | **Flutter Bloc** (`v9.1.1`) & **Cubit** | `EmergencyBloc`, `WayHomeCubit`, `FamilyCubit`, `CaregiverRequestsCubit`, `AppSettingsCubit` |
+| **Real-Time Gateway** | **Socket.io Client** (`v3.0.2`) | Real-time event streaming and live connection handling (`SocketService`) |
+| **Localization** | `flutter_localizations` | Native Arabic and English support (`AppLocalizations`) |
+| **Design System** | Custom Material 3 | High-contrast themes, dynamic system font scaling, large touch targets |
 
 ---
 
 ## ✨ Features Implemented in `lib/`
 
-### 1. 💊 Medication & Daily Reminders (`features/reminders`)
-- Daily timeline for morning, afternoon, and evening medication schedules.
-- High-contrast interactive reminder cards with one-tap status toggling (`pending` / `completed`).
-- Add and delete reminder functionality managed reactively through Riverpod.
+### 1. 🚨 15-Second Emergency SOS Countdown (`features/emergency`)
+- **`EmergencyBloc` FSM**: Event-driven finite state machine managing the 15-second cancelable countdown timer.
+- Protects seniors against accidental false triggers (e.g. hand tremors) with prominent cancel and instant-dispatch buttons.
+- State-managed session transitions: `EmergencySessionStarted` → `EmergencyCountdownTicked` → `EmergencyDispatchedImmediately` or `EmergencyCancelled`.
 
-### 2. 🎙️ Voice Assistant UI (`features/voice_assistant`)
-- Conversational chat interface tailored for older adults with oversized text bubbles and clear status cues.
-- State-driven interaction flow managed via `VoiceAssistantProvider`.
+### 2. 🧭 "Way Home" Walking Directional Assistant (`features/way_home`)
+- **`WayHomeCubit`**: Step-by-step directional walking guidance designed for elders experiencing spatial disorientation.
+- High-contrast directional cues, remaining distance calculations, and step advancement (`WayHomeStep`).
 
-### 3. 🚨 Emergency Contacts & Caregiver Hub (`features/emergency`)
-- Immediate emergency screen providing quick one-tap contact calling.
-- Caregiver request listing and family connection management.
+### 3. 💊 Medication & Daily Reminders (`features/reminders`)
+- Daily timeline separated into morning, afternoon, and evening medication schedules.
+- Card-based reminder items with one-tap status toggling (`pending` / `completed`).
+- Add and delete reminder flows handled reactively.
 
-### 4. 🏥 Healthcare & Doctor Appointments (`features/doctors`)
-- Directory listing and search interface for clinics and medical specialists.
+### 4. 🎙️ Conversational Voice Dialogue UI (`features/voice_assistant`)
+- Senior-centric conversational chat interface with oversized text bubbles and audio state feedback cues.
+- Dialogue layout tailored for elder readability.
+
+### 5. 👨‍👩‍👧 Family Circle & Caregiver Coordination (`features/emergency`)
+- **`FamilyCubit` & `CaregiverRequestsCubit`**: Caregiver connection listing, approval workflow, and one-tap emergency contact calling.
+
+### 6. 🏥 Healthcare & Doctor Appointments (`features/doctors`)
+- Directory listing and specialty search for medical clinics and hospitals.
 - Appointment scheduling view and status tracking.
 
-### 5. ♿ Accessibility-First System (`core/theme` & `core/widgets`)
-- Floating Accessibility Action Sheet allowing dynamic font scaling up to 145% via custom `MediaQuery` wrapping.
-- High-contrast color palettes adhering to legible contrast thresholds.
+### 7. ♿ Accessibility-First System (`core/theme` & `core/widgets`)
+- Dynamic font scaling up to 145% wrapped seamlessly around the app's `MediaQuery`.
+- `AccessibilityFloatingButton` for instant on-screen accessibility adjustments.
 - Minimum 48–60dp touch targets across all interactive buttons (`AccessibleButton`).
 
-### 6. 🔌 Real-Time Connectivity (`core/socket`)
-- Socket.io client service wrapper (`SocketService`) handling connection states, event subscriptions, and banner feedback.
+### 8. 🔌 Real-Time Connectivity (`core/socket`)
+- Centralized `SocketService` managing connection states, reconnects, event streams, and real-time status banners.
 
 ---
 
-## 👨‍💻 My Role & Personal Contributions (Ezz Al-Din)
+## 👨‍💻 My Role & Contribution (Ezz Al-Din)
 
-As the primary mobile frontend contributor on the team, my work focused on:
-- **Application Architecture & Navigation**: Architected the application structure, main navigation shell (`HomeShellScreen`), bottom navigation tabs, and onboarding flows.
-- **State Management (Riverpod)**: Authored and structured the client state management providers (`RemindersProvider`, `VoiceAssistantProvider`, `FamilyProvider`, `DoctorsProvider`, `AppointmentsProvider`).
-- **Complete Screen & UI Implementation**: Built the user interfaces for Reminders, Voice Assistant dialogue, Emergency contacts, Doctor appointments, and Authentication from Figma wireframes into production Flutter widgets.
-- **Accessibility Engine**: Engineered the `AccessibilityFloatingButton` font scaling mechanism and custom accessible button wrappers.
-- **Socket.io Integration**: Scaffolded the client-side `SocketService` and reactive connection status indicators.
+- **Team Leadership**: Led a multidisciplinary graduation project team of four members.
+- **Complete Mobile Client**: Architected and built the entire Flutter mobile application from the ground up.
+- **State Management**: Designed and implemented the complete Bloc/Cubit reactive state layer (`EmergencyBloc`, `WayHomeCubit`, `FamilyCubit`, `CaregiverRequestsCubit`, `AppSettingsCubit`).
+- **UI/UX & Accessibility Engineering**: Translated Figma specifications into production Flutter widgets, implementing the accessibility font scaling system and high-contrast UI themes.
+- **Real-Time Integration**: Integrated the client-side Socket.io service layer for real-time caregiver synchronization.
 
 ---
 
-## 🔮 Planned Architecture (Future Roadmap)
+## 🔮 Out of Scope / Backend Roadmap
 
-The following items are outlined in project architectural specifications and planned for future integration:
-- **Speech-to-Intent Pipeline**: Backend Arabic Natural Language Understanding (NLU) microservice integration for hands-free voice intent processing.
-- **Automated Emergency Call Escalation**: Backend-driven sequential telephony dispatch for unanswered SOS alerts.
-- **"Way Home" Walking Assistance**: GPS-guided simplified turn-by-turn walking route navigation for disoriented seniors.
-- **Lab WCAG AAA Certification**: Formal automated contrast and screen-reader accessibility test suite.
+The mobile client interface is ready to connect to upstream external services:
+- **Arabic Speech-to-Intent Pipeline**: Backend Arabic Natural Language Understanding (NLU) microservice for voice intent processing.
+- **Automated Telephony Call Dispatch**: Backend telecom service for automated multi-contact phone call escalation.
 
 ---
 

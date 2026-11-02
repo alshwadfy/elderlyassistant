@@ -47,7 +47,7 @@ class AiVoiceApiResponse {
 
 /// Unified API & AI Service Layer for Rafiq (رفيق).
 ///
-/// Separates all network & AI communication from UI and Riverpod StateNotifiers.
+/// Separates all network & AI communication from UI and Bloc/Cubit handlers.
 /// When `AppConfig.apiBaseUrl` / `AppConfig.aiBaseUrl` are provided via `--dart-define`,
 /// this service performs real HTTP JSON requests. When offline or unconfigured,
 /// it returns deterministic responses matching Sequence Diagrams 1–4.
