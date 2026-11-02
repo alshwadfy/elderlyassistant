@@ -1,18 +1,21 @@
 import 'voice_interaction_model.dart';
 import '../../../doctors/data/models/doctor_model.dart';
+
 enum VoiceAssistantState { idle, listening, processing, speaking }
 
-enum ChatBubbleKind { assistant, user, doctors }
+enum ChatBubbleKind { assistant, user, doseLogged, doctors, familyCall }
 
 class ChatBubble {
   const ChatBubble({
     required this.kind,
     required this.text,
+    this.badgeTitle,
     this.doctors = const [],
   });
 
   final ChatBubbleKind kind;
   final String text;
+  final String? badgeTitle;
   final List<DoctorModel> doctors;
 }
 

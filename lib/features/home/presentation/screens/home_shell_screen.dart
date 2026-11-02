@@ -1,142 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/socket/socket_providers.dart';
-import '../../../../core/socket/socket_service.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/accessibility_floating_button.dart';
 import '../../../../core/widgets/app_bottom_nav_bar.dart';
-import '../../../../core/widgets/app_header.dart';
 import '../../../../core/widgets/connection_status_banner.dart';
-import '../../../doctors/presentation/screens/appointments_screen.dart';
 import '../../../doctors/presentation/screens/doctor_search_screen.dart';
-import '../../../emergency/presentation/screens/emergency_screen.dart';
-import '../../../emergency/presentation/screens/family_circle_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../reminders/presentation/screens/reminders_screen.dart';
-import '../../../voice_assistant/presentation/screens/voice_assistant_screen.dart';
 import 'home_tab_view.dart';
 
-class AppShellRoutes {
-  static const home = '/home';
-  static const schedule = '/schedule';
-  static const reminders = '/reminders';
-  static const more = '/more';
-  static const doctors = '/doctors';
-  static const family = '/family';
-  static const emergency = '/emergency';
-  static const voice = '/voice';
-}
+class HomeShellScreen extends StatefulWidget {
+  const HomeShellScreen({super.key, this.initialIndex = 0});
 
-class HomeShellScreen extends ConsumerStatefulWidget {
-  const HomeShellScreen({super.key});
+  final int initialIndex;
 
   @override
-  ConsumerState<HomeShellScreen> createState() => _HomeShellScreenState();
+  State<HomeShellScreen> createState() => _HomeShellScreenState();
 }
 
-class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
-  int _currentIndex = 0;
-  bool _showHeader = true;
+class _HomeShellScreenState extends State<HomeShellScreen> {
+  late int _currentIndex;
 
-  static const _tabRoutes = [
-    AppShellRoutes.home,
-    AppShellRoutes.schedule,
-    AppShellRoutes.reminders,
-    AppShellRoutes.more,
-  ];
-
-  void _onTabTap(int index) {
-    setState(() {
-      _currentIndex = index;
-      _showHeader = true;
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<SocketCubit>().connect();
+      }
     });
-    _navigatorKey.currentState?.pushNamedAndRemoveUntil(
-      _tabRoutes[index],
-      (route) => false,
-    );
   }
 
-  void _syncChrome(String? name) {
-    final hideHeader = name == AppShellRoutes.emergency;
-    final tabIndex = switch (name) {
-      AppShellRoutes.schedule => 1,
-      AppShellRoutes.reminders => 2,
-      AppShellRoutes.more => 3,
-      _ => 0,
-    };
-    if (!mounted) return;
-    if (_showHeader == !hideHeader && _currentIndex == tabIndex) return;
+  void _switchTab(int index) {
     setState(() {
-      _showHeader = !hideHeader;
-      _currentIndex = tabIndex;
+      _currentIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final connection = ref.watch(socketConnectionStateProvider);
-    final connectionState =
-        connection.asData?.value ?? SocketConnectionState.idle;
-
-    final emergencyBg = isDark ? AppColorsDark.emergencyBg : AppColors.emergencyBg;
-    final scaffoldBg = _showHeader ? theme.scaffoldBackgroundColor : emergencyBg;
+    final socketState = context.watch<SocketCubit>().state;
+    final pages = <Widget>[
+      HomeTabView(onSwitchTab: _switchTab),
+      DoctorSearchScreen(onBackToHome: () => _switchTab(0)),
+      RemindersScreen(onBackToHome: () => _switchTab(0)),
+      ProfileScreen(onBackToHome: () => _switchTab(0)),
+    ];
 
     return Scaffold(
-      backgroundColor: scaffoldBg,
-      appBar: _showHeader ? const AppHeader() : null,
-      body: Column(
+      body: Stack(
         children: [
-          ConnectionStatusBanner(
-            state: connectionState,
-            onRetry: () => ref.read(socketServiceProvider).retryConnect(),
+          Column(
+            children: [
+              ConnectionStatusBanner(
+                state: socketState,
+                onRetry: () => context.read<SocketCubit>().retryConnect(),
+              ),
+              Expanded(
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: pages,
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Navigator(
-              key: _navigatorKey,
-              initialRoute: AppShellRoutes.home,
-              onGenerateRoute: (settings) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _syncChrome(settings.name);
-                });
-                return MaterialPageRoute(
-                  settings: settings,
-                  builder: (_) => _pageFor(settings.name),
-                );
-              },
-            ),
-          ),
+          const AccessibilityFloatingButton(),
         ],
       ),
-      floatingActionButton: const AccessibilityFloatingButton(),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
-        onTap: _onTabTap,
+        onTap: _switchTab,
       ),
     );
-  }
-
-  Widget _pageFor(String? name) {
-    switch (name) {
-      case AppShellRoutes.schedule:
-        return const AppointmentsScreen();
-      case AppShellRoutes.reminders:
-        return const RemindersScreen();
-      case AppShellRoutes.more:
-        return const ProfileScreen();
-      case AppShellRoutes.doctors:
-        return const DoctorSearchScreen();
-      case AppShellRoutes.family:
-        return const FamilyCircleScreen();
-      case AppShellRoutes.emergency:
-        return const EmergencyScreen();
-      case AppShellRoutes.voice:
-        return const VoiceAssistantScreen();
-      case AppShellRoutes.home:
-      default:
-        return const HomeTabView();
-    }
   }
 }

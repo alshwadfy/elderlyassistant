@@ -1,95 +1,145 @@
 import 'package:flutter/material.dart';
 
-/// Exact palette from ui.md — AI Elderly Assistant
-/// All values verified against WCAG AA (4.5:1 min), targeting AAA (7:1+).
+/// Color tokens for Rafiq (رفيق) — Day (Sunny ☀) & Night (Moonlit ☾) palettes,
+/// while preserving WCAG AA/AAA accessibility tokens from `docs/ui.md`.
 class AppColors {
-  const AppColors._();
+  AppColors._();
 
-  // ─── Brand ────────────────────────────────────────────────────────────────
-  static const Color primary = Color(0xFF1647AD); // Buttons, active nav, primary actions
-  static const Color primaryDark = Color(0xFF10275A); // Pressed states, dark-mode surfaces
-  static const Color primaryContainer = Color(0xFFE9ECFF); // Selected states, subtle highlight fills
+  // ───── Spec & Primary Brand (Day) ─────
+  static const Color primary = Color(0xFF1647AD);
+  static const Color primaryLight = Color(0xFF3B5BDB);
+  static const Color primaryDark = Color(0xFF0E3484);
+  static const Color primaryContainer = Color(0xFFE0ECFF);
+  static const Color onPrimaryContainer = Color(0xFF0A2463);
 
-  // Legacy aliases kept so existing code referencing them still compiles
-  static const Color primaryLight = Color(0xFF3D68D0); // Slightly lighter for hover states
-  static const Color primarySurface = Color(0xFFE9ECFF);
+  // ───── Rafiq Figma Day Tokens ─────
+  static const Color rafiqPrimary = Color(0xFF3B5BDB);
+  static const Color rafiqPrimaryTint = Color(0xFFEEF2FF);
+  static const Color rafiqSkyTop = Color(0xFF9AC9FF);
+  static const Color rafiqSkyMid = Color(0xFFBEDCFF);
+  static const Color rafiqSkyBottom = Color(0xFFF0F4FF);
+  static const Color rafiqSunGold = Color(0xFFFFCA3A);
 
-  // ─── Background & Surface ─────────────────────────────────────────────────
-  static const Color background = Color(0xFFF7F9FF); // App background
-  static const Color surface = Color(0xFFFFFFFF); // Cards
-  static const Color cardBorder = Color(0xFFD8DEFF);
+  // ───── Backgrounds & Surfaces (Day) ─────
+  static const Color background = Color(0xFFF0F4FF);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceVariant = Color(0xFFEEF2FF);
+  static const Color cardBorder = Color(0xFFDDE4F5);
+  static const Color border = Color(0xFFDDE4F5);
 
-  // ─── Text ─────────────────────────────────────────────────────────────────
-  static const Color textPrimary = Color(0xFF1A2B4A); // Headings, primary body text (>7:1 on white)
-  static const Color textSecondary = Color(0xFF4B5875); // 7.1:1 on white — replaces #66789E
-  static const Color textMuted = Color(0xFF4B5875); // Same safe floor — never go lighter
+  // ───── Text Hierarchy (WCAG AAA / AA) ─────
+  static const Color textPrimary = Color(0xFF1A2B4A);
+  static const Color textSecondary = Color(0xFF42526E);
+  static const Color textMuted = Color(0xFF556581);
+  static const Color textHint = Color(0xFF556581);
   static const Color textLight = Color(0xFFFFFFFF);
 
-  // ─── Status — required by spec ────────────────────────────────────────────
-  static const Color success = Color(0xFF15803D); // 5.0:1 on white
-  static const Color successContainer = Color(0xFFDCFCE7); // Tint for badges/cards
-  static const Color warning = Color(0xFFB45309); // 5.0:1 on white
+  // ───── Semantic Status Colors ─────
+  static const Color success = Color(0xFF15803D);
+  static const Color successLight = Color(0xFFDCFCE7);
+  static const Color successContainer = Color(0xFFDCFCE7);
+  static const Color successBorder = Color(0xFF86EFAC);
+
+  static const Color warning = Color(0xFFB45309);
+  static const Color warningLight = Color(0xFFFEF3C7);
   static const Color warningContainer = Color(0xFFFEF3C7);
-  static const Color emergency = Color(0xFFB91C1C); // Error/Emergency — 6.5:1 on white
+  static const Color warningBorder = Color(0xFFFCD34D);
+
+  // ───── Emergency / SOS ─────
+  static const Color emergency = Color(0xFFD32F2F);
+  static const Color emergencyRed = Color(0xFFD32F2F);
+  static const Color emergencyRedDark = Color(0xFF991B1B);
   static const Color emergencyContainer = Color(0xFFFEE2E2);
-  static const Color emergencyBg = Color(0xFFFFF5F5);
+  static const Color onEmergencyContainer = Color(0xFF7F1D1D);
+  static const Color emergencyBorder = Color(0xFFFCA5A5);
 
-  // Legacy aliases
-  static const Color emergencyLight = Color(0xFFDC2626);
-  static const Color secondary = Color(0xFF15803D);
-  static const Color secondaryContainer = Color(0xFFDCFCE7);
+  // ───── Chips ─────
+  static const Color chipSelected = Color(0xFF3B5BDB);
+  static const Color chipUnselected = Color(0xFFEEF2FF);
 
-  // ─── Borders & dividers ───────────────────────────────────────────────────
-  static const Color border = Color(0xFFD8DEFF);
-  static const Color divider = Color(0xFFE9ECFF);
+  // ───── Feature Card Accents ─────
+  static const Color doctorCardBg = Color(0xFFE8F1FF);
+  static const Color doctorIconColor = Color(0xFF1647AD);
 
-  // ─── Navigation ───────────────────────────────────────────────────────────
-  static const Color navInactive = Color(0xFF4B5875); // 7.1:1 — always readable
-  static const Color navActive = Color(0xFF1647AD);
+  static const Color medicationCardBg = Color(0xFFDCFCE7);
+  static const Color medicationIconColor = Color(0xFF15803D);
 
-  // ─── Chips ────────────────────────────────────────────────────────────────
-  static const Color chipSelected = Color(0xFF1647AD);
-  static const Color chipUnselected = Color(0xFFE9ECFF);
-  static const Color chipTextUnselected = Color(0xFF1A2B4A);
+  static const Color familyCardBg = Color(0xFFF3E8FF);
+  static const Color familyIconColor = Color(0xFF6B21A8);
+
+  static const Color emergencyCardBg = Color(0xFFFEE2E2);
+  static const Color emergencyIconColor = Color(0xFFB91C1C);
+
+  // ───── Navigation Bar ─────
+  static const Color navActive = Color(0xFF3B5BDB);
+  static const Color navInactive = Color(0xFF42526E);
+
+  // ───── Dividers & Borders ─────
+  static const Color divider = Color(0xFFDDE4F5);
 }
 
-/// Dark theme — high contrast, easy on eyes in low light.
+/// Rafiq Moonlit Night (ليل ☾) Palette matching Figma `#7:5300` & `#107:60`.
 class AppColorsDark {
-  const AppColorsDark._();
+  AppColorsDark._();
 
-  static const Color primary = Color(0xFF5B8DEF); // Lighter blue — readable on dark bg
-  static const Color primaryDark = Color(0xFF1647AD);
-  static const Color primaryContainer = Color(0xFF1E2D4A); // Dark tinted surface
-  static const Color primaryLight = Color(0xFF7BA7FF);
-  static const Color primarySurface = Color(0xFF1E2D4A);
+  static const Color primary = Color(0xFF516BEA);
+  static const Color primaryLight = Color(0xFF7396FF);
+  static const Color primaryDark = Color(0xFF3B5BDB);
+  static const Color primaryContainer = Color(0xFF263555);
+  static const Color onPrimaryContainer = Color(0xFFEDF2FF);
 
-  static const Color background = Color(0xFF0D1521); // Very dark navy
-  static const Color surface = Color(0xFF182030); // Card surface
-  static const Color cardBorder = Color(0xFF253553);
+  static const Color rafiqAccentBlue = Color(0xFF7396FF);
+  static const Color rafiqMoonGold = Color(0xFFF5E5AD);
+  static const Color rafiqSkyNightTop = Color(0xFF0E1B38);
+  static const Color rafiqSkyNightMid = Color(0xFF1D3363);
+  static const Color rafiqSkyNightBottom = Color(0xFF111A30);
 
-  static const Color textPrimary = Color(0xFFF0F4FF); // Near-white — high contrast
-  static const Color textSecondary = Color(0xFFB8C8E8); // Readable on dark
-  static const Color textMuted = Color(0xFF8FA8C8);
+  static const Color background = Color(0xFF111A30);
+  static const Color surface = Color(0xFF1C2943);
+  static const Color surfaceVariant = Color(0xFF263555);
+  static const Color cardBorder = Color(0xFF344460);
+  static const Color border = Color(0xFF344460);
+
+  static const Color textPrimary = Color(0xFFEDF2FF);
+  static const Color textSecondary = Color(0xFFAFBCD4);
+  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color textHint = Color(0xFF94A3B8);
   static const Color textLight = Color(0xFFFFFFFF);
 
-  static const Color success = Color(0xFF34D27A); // Bright enough on dark
-  static const Color successContainer = Color(0xFF0C2B1A);
+  static const Color success = Color(0xFF4ADE80);
+  static const Color successLight = Color(0xFF16382C);
+  static const Color successContainer = Color(0xFF16382C);
+  static const Color successBorder = Color(0xFF22C55E);
+
   static const Color warning = Color(0xFFFBBF24);
-  static const Color warningContainer = Color(0xFF2A1800);
+  static const Color warningLight = Color(0xFF3B2A14);
+  static const Color warningContainer = Color(0xFF3B2A14);
+  static const Color warningBorder = Color(0xFFD97706);
+
   static const Color emergency = Color(0xFFEF4444);
-  static const Color emergencyContainer = Color(0xFF2D0A0A);
-  static const Color emergencyBg = Color(0xFF1A0808);
+  static const Color emergencyRed = Color(0xFFEF4444);
+  static const Color emergencyRedDark = Color(0xFF991B1B);
+  static const Color emergencyContainer = Color(0xFF3B1A26);
+  static const Color onEmergencyContainer = Color(0xFFFECACA);
+  static const Color emergencyBorder = Color(0xFFDC2626);
 
-  static const Color secondary = Color(0xFF34D27A);
-  static const Color secondaryContainer = Color(0xFF0C2B1A);
+  static const Color chipSelected = Color(0xFF516BEA);
+  static const Color chipUnselected = Color(0xFF263555);
 
-  static const Color border = Color(0xFF253553);
-  static const Color divider = Color(0xFF1E2D4A);
+  static const Color doctorCardBg = Color(0xFF1E3A5F);
+  static const Color doctorIconColor = Color(0xFF93C5FD);
 
-  static const Color navInactive = Color(0xFF8FA8C8);
-  static const Color navActive = Color(0xFF5B8DEF);
+  static const Color medicationCardBg = Color(0xFF16382C);
+  static const Color medicationIconColor = Color(0xFF86EFAC);
 
-  static const Color chipSelected = Color(0xFF5B8DEF);
-  static const Color chipUnselected = Color(0xFF1E2D4A);
-  static const Color chipTextUnselected = Color(0xFFB8C8E8);
+  static const Color familyCardBg = Color(0xFF2E1D4A);
+  static const Color familyIconColor = Color(0xFFD8B4FE);
+
+  static const Color emergencyCardBg = Color(0xFF3B1A26);
+  static const Color emergencyIconColor = Color(0xFFFCA5A5);
+
+  static const Color navActive = Color(0xFF7396FF);
+  static const Color navInactive = Color(0xFFAFBCD4);
+
+  static const Color divider = Color(0xFF344460);
 }

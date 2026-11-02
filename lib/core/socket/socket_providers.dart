@@ -1,35 +1,32 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../config/app_config.dart';
-import 'socket_event_models.dart';
 import 'socket_service.dart';
 
-/// Shared SocketService. Does not connect until SOCKET_URL is provided.
-final socketServiceProvider = Provider<SocketService>((ref) {
-  final service = SocketService(serverUrl: AppConfig.socketUrl);
-  ref.onDispose(service.dispose);
-  return service;
-});
+/// Reactive Cubit managing the Socket.io connection lifecycle for real-time
+/// Family Caregiver Portal events (`reminder_created`, `visit_plan_updated`, `emergency_alert`).
+class SocketCubit extends Cubit<SocketConnectionState> {
+  SocketCubit({SocketService? service})
+      : _service = service ?? SocketService(serverUrl: AppConfig.socketUrl),
+        super(SocketConnectionState.idle) {
+    _sub = _service.connectionStateStream.listen((nextState) {
+      if (!isClosed) emit(nextState);
+    });
+  }
 
-final socketConnectionStateProvider =
-    StreamProvider.autoDispose<SocketConnectionState>((ref) {
-  final socketService = ref.watch(socketServiceProvider);
-  return socketService.connectionStateStream;
-});
+  final SocketService _service;
+  StreamSubscription<SocketConnectionState>? _sub;
 
-final elderStatusStreamProvider =
-    StreamProvider.autoDispose<ElderStatusUpdate>((ref) {
-  final socketService = ref.watch(socketServiceProvider);
-  return socketService.elderStatusStream;
-});
+  SocketService get service => _service;
 
-final alertTriggeredStreamProvider =
-    StreamProvider.autoDispose<AlertTriggered>((ref) {
-  final socketService = ref.watch(socketServiceProvider);
-  return socketService.alertTriggeredStream;
-});
+  void connect() => _service.connect();
 
-final connectionAckStreamProvider =
-    StreamProvider.autoDispose<ConnectionAck>((ref) {
-  final socketService = ref.watch(socketServiceProvider);
-  return socketService.connectionAckStream;
-});
+  void retryConnect() => _service.retryConnect();
+
+  @override
+  Future<void> close() async {
+    await _sub?.cancel();
+    _service.dispose();
+    return super.close();
+  }
+}

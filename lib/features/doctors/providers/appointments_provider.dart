@@ -1,55 +1,29 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/repositories/rafiq_repositories.dart';
 import '../data/models/appointment_model.dart';
 
-class AppointmentsNotifier extends StateNotifier<List<AppointmentModel>> {
-  AppointmentsNotifier() : super(_mockAppointments);
-
-  static final List<AppointmentModel> _mockAppointments = [
-    AppointmentModel(
-      appointmentId: 'app_1',
-      doctorId: 'doc_1',
-      doctorName: 'Dr. Ahmed Hassan',
-      doctorType: 'General Practitioner',
-      dateTime: DateTime(2026, 9, 23, 10, 0),
-      status: 'Upcoming',
-    ),
-    AppointmentModel(
-      appointmentId: 'app_2',
-      doctorId: 'doc_2',
-      doctorName: 'Dr. Salma Abdelaziz',
-      doctorType: 'Internal Medicine',
-      dateTime: DateTime(2026, 9, 28, 14, 30),
-      status: 'Upcoming',
-    ),
-    AppointmentModel(
-      appointmentId: 'app_3',
-      doctorId: 'doc_3',
-      doctorName: 'Dr. Karim Nabil',
-      doctorType: 'Cardiology',
-      dateTime: DateTime(2026, 8, 12, 11, 0),
-      status: 'Past',
-    ),
-  ];
+/// Next Visit / Appointments Cubit (`زيارتي القادمة` — Sequence Diagram 4).
+class AppointmentsCubit extends Cubit<List<AppointmentModel>> {
+  AppointmentsCubit()
+      : super(List<AppointmentModel>.from(HealthcareRepository.initialVisits));
 
   void addAppointment(AppointmentModel appointment) {
-    state = [appointment, ...state];
+    emit([appointment, ...state]);
   }
 
   void cancelAppointment(String appointmentId) {
-    state = [
+    emit([
       for (final appt in state)
         if (appt.appointmentId == appointmentId)
           appt.copyWith(status: 'Cancelled')
         else
           appt,
-    ];
+    ]);
   }
 
   void deleteAppointment(String appointmentId) {
-    state = state.where((a) => a.appointmentId != appointmentId).toList();
+    emit(state.where((a) => a.appointmentId != appointmentId).toList());
   }
 }
 
-final appointmentsProvider = StateNotifierProvider<AppointmentsNotifier, List<AppointmentModel>>((ref) {
-  return AppointmentsNotifier();
-});
+typedef AppointmentsNotifier = AppointmentsCubit;

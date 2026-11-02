@@ -1,107 +1,63 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/repositories/rafiq_repositories.dart';
 import '../data/models/reminder_model.dart';
 
-class RemindersNotifier extends StateNotifier<List<ReminderModel>> {
-  RemindersNotifier() : super(_initialReminders);
+/// Medication & Routine Timeline Cubit (`أدويتي` & `الرئيسية`).
+///
+/// Subscribes to `MedicationRepository.remindersStream` so that doses logged
+/// conversationally via `VoiceAssistantBloc` (Sequence Diagram 1) or remote
+/// Caregiver updates (Sequence Diagram 4) automatically update the UI without
+/// controller-to-controller coupling.
+class RemindersCubit extends Cubit<List<ReminderModel>> {
+  RemindersCubit({MedicationRepository? repository})
+      : this._(repository ?? MedicationRepository());
 
-  static final List<ReminderModel> _initialReminders = [
-    ReminderModel(
-      reminderId: 'rem_1',
-      userId: 'user_01',
-      type: 'medication',
-      title: 'Blood Pressure Medicine (Amlodipine)',
-      scheduledTime: DateTime(2026, 9, 23, 8, 0),
-      repeatPattern: 'Daily • Morning',
-      status: 'completed',
-      dosage: '1 Tablet (5mg)',
-      instructions: 'Take after breakfast with a full glass of water',
-      durationDays: 30,
-      startDate: DateTime(2026, 9, 10),
-    ),
-    ReminderModel(
-      reminderId: 'rem_2',
-      userId: 'user_01',
-      type: 'medication',
-      title: 'Diabetes Medication (Metformin)',
-      scheduledTime: DateTime(2026, 9, 23, 13, 0),
-      repeatPattern: 'Daily • Afternoon',
-      status: 'pending',
-      dosage: '1 Tablet (500mg)',
-      instructions: 'Take in the middle of lunch meal',
-      durationDays: 14,
-      startDate: DateTime(2026, 9, 18),
-    ),
-    ReminderModel(
-      reminderId: 'rem_3',
-      userId: 'user_01',
-      type: 'medication',
-      title: 'Calcium & Vitamin D3',
-      scheduledTime: DateTime(2026, 9, 23, 17, 30),
-      repeatPattern: 'Daily • Evening',
-      status: 'pending',
-      dosage: '1 Softgel',
-      instructions: 'Take after evening tea',
-      durationDays: 60,
-      startDate: DateTime(2026, 9, 1),
-    ),
-    ReminderModel(
-      reminderId: 'rem_4',
-      userId: 'user_01',
-      type: 'medication',
-      title: 'Eye Drops (Latanoprost)',
-      scheduledTime: DateTime(2026, 9, 23, 21, 0),
-      repeatPattern: 'Daily • Night',
-      status: 'skipped',
-      dosage: '1 Drop in each eye',
-      instructions: 'Apply right before bedtime',
-      durationDays: 7,
-      startDate: DateTime(2026, 9, 20),
-    ),
-  ];
+  RemindersCubit._(this._repository) : super(_repository.currentReminders) {
+    _sub = _repository.remindersStream.listen((items) {
+      if (!isClosed) emit(items);
+    });
+  }
+
+  final MedicationRepository _repository;
+  StreamSubscription<List<ReminderModel>>? _sub;
 
   void toggleStatus(String reminderId) {
-    state = [
-      for (final rem in state)
-        if (rem.reminderId == reminderId)
-          rem.copyWith(
-            status: rem.status == 'completed' ? 'pending' : 'completed',
-            completedAt: rem.status == 'completed' ? null : DateTime.now(),
-          )
-        else
-          rem,
-    ];
+    _repository.toggleStatus(reminderId);
+    emit(List.unmodifiable(_repository.currentReminders));
   }
 
   void setStatus(String reminderId, String newStatus) {
-    state = [
-      for (final rem in state)
-        if (rem.reminderId == reminderId)
-          rem.copyWith(
-            status: newStatus,
-            completedAt: newStatus == 'completed' ? DateTime.now() : null,
-          )
-        else
-          rem,
-    ];
+    _repository.setStatus(reminderId, newStatus);
+    emit(List.unmodifiable(_repository.currentReminders));
+  }
+
+  String logDoseByMedicationName(String? medicationQuery) {
+    final res = _repository.logDoseByMedicationName(medicationQuery);
+    emit(List.unmodifiable(_repository.currentReminders));
+    return res;
   }
 
   void addReminder(ReminderModel reminder) {
-    state = [...state, reminder];
+    _repository.addReminder(reminder);
+    emit(List.unmodifiable(_repository.currentReminders));
   }
 
   void updateReminder(ReminderModel updated) {
-    state = [
-      for (final rem in state)
-        if (rem.reminderId == updated.reminderId) updated else rem,
-    ];
+    _repository.updateReminder(updated);
+    emit(List.unmodifiable(_repository.currentReminders));
   }
 
   void deleteReminder(String reminderId) {
-    state = state.where((rem) => rem.reminderId != reminderId).toList();
+    _repository.deleteReminder(reminderId);
+    emit(List.unmodifiable(_repository.currentReminders));
+  }
+
+  @override
+  Future<void> close() {
+    _sub?.cancel();
+    return super.close();
   }
 }
 
-final remindersProvider =
-    StateNotifierProvider<RemindersNotifier, List<ReminderModel>>((ref) {
-  return RemindersNotifier();
-});
+typedef RemindersNotifier = RemindersCubit;

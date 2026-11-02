@@ -1,17 +1,21 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AuthState {
   final bool isAuthenticated;
   final String? userName;
   final String? userEmail;
+  final String userPhone;
+  final String homeAddress;
   final bool isLoading;
   final String? error;
   final bool codeSent;
 
   const AuthState({
     this.isAuthenticated = false,
-    this.userName,
-    this.userEmail,
+    this.userName = 'عادل أحمد',
+    this.userEmail = 'adel.ahmed@rafiq.app',
+    this.userPhone = '+20 10 1234 5678',
+    this.homeAddress = '١٤ شارع الجلاء، مصر الجديدة، القاهرة',
     this.isLoading = false,
     this.error,
     this.codeSent = false,
@@ -21,6 +25,8 @@ class AuthState {
     bool? isAuthenticated,
     String? userName,
     String? userEmail,
+    String? userPhone,
+    String? homeAddress,
     bool? isLoading,
     String? error,
     bool? codeSent,
@@ -29,6 +35,8 @@ class AuthState {
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       userName: userName ?? this.userName,
       userEmail: userEmail ?? this.userEmail,
+      userPhone: userPhone ?? this.userPhone,
+      homeAddress: homeAddress ?? this.homeAddress,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       codeSent: codeSent ?? this.codeSent,
@@ -36,26 +44,44 @@ class AuthState {
   }
 }
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState());
+class AuthCubit extends Cubit<AuthState> {
+  AuthCubit() : super(const AuthState());
 
   Future<bool> login(String email, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 400));
+    emit(state.copyWith(isLoading: true, error: null));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (email.trim().isEmpty || password.trim().isEmpty) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Please enter email and password',
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: 'يرجى إدخال البريد الإلكتروني وكلمة المرور',
+        ),
       );
       return false;
     }
 
-    state = state.copyWith(
-      isAuthenticated: true,
-      isLoading: false,
-      userEmail: email,
-      userName: 'Adel',
+    emit(
+      state.copyWith(
+        isAuthenticated: true,
+        isLoading: false,
+        userEmail: email.trim(),
+        userName: state.userName ?? 'عادل أحمد',
+      ),
+    );
+    return true;
+  }
+
+  Future<bool> loginWithGoogle() async {
+    emit(state.copyWith(isLoading: true, error: null));
+    await Future.delayed(const Duration(milliseconds: 300));
+    emit(
+      state.copyWith(
+        isAuthenticated: true,
+        isLoading: false,
+        userEmail: 'adel.ahmed@gmail.com',
+        userName: 'عادل أحمد',
+      ),
     );
     return true;
   }
@@ -66,51 +92,95 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String phone,
     required String password,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 400));
+    emit(state.copyWith(isLoading: true, error: null));
+    await Future.delayed(const Duration(milliseconds: 300));
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Please complete all required fields',
+    if (name.trim().isEmpty || email.trim().isEmpty || password.trim().isEmpty) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: 'يرجى إكمال جميع الحقول المطلوبة',
+        ),
       );
       return false;
     }
 
-    state = state.copyWith(
-      isLoading: false,
-      userName: name,
-      userEmail: email,
-      codeSent: true,
+    emit(
+      state.copyWith(
+        isLoading: false,
+        userName: name.trim(),
+        userEmail: email.trim(),
+        userPhone: phone.trim().isEmpty ? state.userPhone : phone.trim(),
+        codeSent: true,
+      ),
     );
+    return true;
+  }
+
+  Future<bool> sendPasswordReset(String email) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (email.trim().isEmpty) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: 'يرجى إدخال البريد الإلكتروني لاستعادة كلمة المرور',
+        ),
+      );
+      return false;
+    }
+    emit(state.copyWith(isLoading: false, userEmail: email.trim()));
     return true;
   }
 
   Future<bool> verifyCode(String code) async {
-    state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 400));
+    emit(state.copyWith(isLoading: true, error: null));
+    await Future.delayed(const Duration(milliseconds: 300));
 
-    if (code.trim() != '1234' && code.trim().length != 4) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Invalid code. Demo code is 1234',
+    final trimmed = code.trim();
+    if (trimmed.length < 4) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: 'يرجى إدخال رمز التحقق الصحيح (مثال: 123456)',
+        ),
       );
       return false;
     }
 
-    state = state.copyWith(
-      isAuthenticated: true,
-      isLoading: false,
-      codeSent: false,
+    emit(
+      state.copyWith(
+        isAuthenticated: true,
+        isLoading: false,
+        codeSent: false,
+      ),
     );
     return true;
   }
 
+  void updateProfile({
+    required String name,
+    required String phone,
+    String? email,
+    String? homeAddress,
+  }) {
+    emit(
+      state.copyWith(
+        userName: name.trim().isEmpty ? state.userName : name.trim(),
+        userPhone: phone.trim().isEmpty ? state.userPhone : phone.trim(),
+        userEmail: email?.trim().isNotEmpty == true
+            ? email!.trim()
+            : state.userEmail,
+        homeAddress: homeAddress?.trim().isNotEmpty == true
+            ? homeAddress!.trim()
+            : state.homeAddress,
+      ),
+    );
+  }
+
   void logout() {
-    state = const AuthState();
+    emit(const AuthState(isAuthenticated: false));
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
-});
+typedef AuthNotifier = AuthCubit;

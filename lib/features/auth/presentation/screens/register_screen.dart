@@ -1,32 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/rafiq_sky_header.dart';
 import '../../providers/auth_provider.dart';
+import 'auth_extra_screens.dart';
 import 'login_form_screen.dart';
 import 'verify_code_screen.dart';
 
-/// Register screen.
-///
-/// Design decisions per ui.md:
-/// • Bold labels ABOVE each field — label never disappears while typing.
-/// • All text ≥ 18sp.
-/// • Privacy policy checkbox text 18sp (not 14sp).
-/// • Error banner: icon + text, not just colour.
-/// • Continue button 64dp.
-class RegisterScreen extends ConsumerStatefulWidget {
+/// Create Account Screen (`إنشاء حساب` `#93:4541`).
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _acceptedPrivacy = false;
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController _nameController = TextEditingController(
+    text: 'عادل أحمد',
+  );
+  final TextEditingController _emailController = TextEditingController(
+    text: 'adel.ahmed@rafiq.app',
+  );
+  final TextEditingController _phoneController = TextEditingController(
+    text: '+20 10 1234 5678',
+  );
+  final TextEditingController _passwordController = TextEditingController(
+    text: 'Rafiq2026',
+  );
   bool _obscurePassword = true;
+  bool _agreedToTerms = true;
 
   @override
   void dispose() {
@@ -37,346 +40,286 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _handleRegister() async {
-    if (!_acceptedPrivacy) {
+  Future<void> _submitRegister() async {
+    if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please accept the privacy policy to continue.',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          backgroundColor: AppColors.warning,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        const SnackBar(
+          content: Text('يرجى الموافقة على شروط الاستخدام وسياسة الخصوصية'),
         ),
       );
       return;
     }
 
-    final success = await ref.read(authProvider.notifier).register(
+    final ok = await context.read<AuthCubit>().register(
           name: _nameController.text,
           email: _emailController.text,
           phone: _phoneController.text,
           password: _passwordController.text,
         );
-
-    if (success && mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const VerifyCodeScreen()),
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const VerifyCodeScreen()),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final auth = context.watch<AuthCubit>().state;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
+    final bgColor = isDark ? AppColorsDark.background : AppColors.background;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColorsDark.textSecondary
+        : AppColors.textSecondary;
+    final primaryColor = isDark
+        ? AppColorsDark.primary
+        : AppColors.rafiqPrimary;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColorsDark.background : AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Semantics(
-          label: 'Go back',
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              size: 28,
-              color: textPrimary,
-            ),
-            onPressed: () => Navigator.maybePop(context),
+      backgroundColor: bgColor,
+      body: Column(
+        children: [
+          RafiqSkyHeader(
+            title: 'إنشاء حساب',
+            subtitle: 'أنشئ حسابك في رفيق بخطوات بسيطة وواضحة',
+            onBack: () => Navigator.of(context).maybePop(),
+            backLabel: 'الترحيب',
           ),
-        ),
-      ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ─── Heading ────────────────────────────────────────────────
-              Text(
-                'Create Your Account',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: primaryColor,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Join our caring community. We are here to support you every step of the way.',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: textSecondary,
-                  height: 1.5,
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // ─── Error banner ────────────────────────────────────────────
-              if (authState.error != null) ...[
-                _ErrorBanner(message: authState.error!, isDark: isDark),
-                const SizedBox(height: 24),
-              ],
-
-              // ─── Full Name ───────────────────────────────────────────────
-              _FieldLabel(label: 'Full Name', isDark: isDark),
-              const SizedBox(height: 8),
-              Semantics(
-                label: 'Full Name',
-                child: TextField(
-                  controller: _nameController,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    hintText: 'e.g. Eleanor Vance',
-                    prefixIcon: Icon(Icons.person_outline_rounded, size: 26, color: primaryColor),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              // ─── Email ───────────────────────────────────────────────────
-              _FieldLabel(label: 'Email Address', isDark: isDark),
-              const SizedBox(height: 8),
-              Semantics(
-                label: 'Email Address',
-                child: TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'e.g. name@email.com',
-                    prefixIcon: Icon(Icons.mail_outline_rounded, size: 26, color: primaryColor),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              // ─── Phone ───────────────────────────────────────────────────
-              _FieldLabel(label: 'Phone Number', isDark: isDark),
-              const SizedBox(height: 8),
-              Semantics(
-                label: 'Phone Number',
-                child: TextField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'Your phone or emergency contact number',
-                    prefixIcon: Icon(Icons.phone_outlined, size: 26, color: primaryColor),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              // ─── Password ────────────────────────────────────────────────
-              _FieldLabel(label: 'Create a Password', isDark: isDark),
-              const SizedBox(height: 8),
-              Semantics(
-                label: 'Create a Password',
-                child: TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'At least 8 characters',
-                    prefixIcon: Icon(Icons.lock_outline_rounded, size: 26, color: primaryColor),
-                    suffixIcon: Semantics(
-                      label: _obscurePassword ? 'Show password' : 'Hide password',
-                      child: IconButton(
-                        tooltip: _obscurePassword ? 'Show password' : 'Hide password',
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          size: 26,
-                          color: textSecondary,
-                        ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
-                      ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: borderColor, width: 1.5),
                     ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ─── Privacy checkbox ────────────────────────────────────────
-              Semantics(
-                label: _acceptedPrivacy
-                    ? 'Privacy policy accepted'
-                    : 'I agree to the Privacy Policy — tap to accept',
-                child: InkWell(
-                  onTap: () =>
-                      setState(() => _acceptedPrivacy = !_acceptedPrivacy),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: Checkbox(
-                            value: _acceptedPrivacy,
-                            onChanged: (v) =>
-                                setState(() => _acceptedPrivacy = v ?? false),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.padded,
+                        Text(
+                          'الاسم الكامل',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: textPrimary,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'I agree to the Privacy Policy. My personal information is stored securely and is only shared with my caregivers.',
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _nameController,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: textPrimary,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: 'عادل أحمد',
+                            prefixIcon: Icon(Icons.person_outline_rounded),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        Text(
+                          'البريد الإلكتروني',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: textPrimary,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: 'adel.ahmed@rafiq.app',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        Text(
+                          'كلمة المرور',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: textPrimary,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded),
+                            suffixIcon: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              child: Text(
+                                _obscurePassword ? 'إظهار' : 'إخفاء',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'استخدم ٨ أحرف على الأقل، مع حروف وأرقام.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          value: _agreedToTerms,
+                          activeColor: primaryColor,
+                          onChanged: (val) {
+                            setState(() => _agreedToTerms = val ?? false);
+                          },
+                          title: Text(
+                            'أوافق على شروط الاستخدام وسياسة الخصوصية',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
                               color: textPrimary,
-                              height: 1.5,
+                            ),
+                          ),
+                        ),
+
+                        if (auth.error != null) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            auth.error!,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.emergencyRed,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+
+                        // Primary Create Account CTA (`إنشاء حساب`)
+                        SizedBox(
+                          width: double.infinity,
+                          height: 58,
+                          child: ElevatedButton(
+                            onPressed: auth.isLoading ? null : _submitRegister,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Text(
+                              auth.isLoading
+                                  ? 'جارٍ إنشاء الحساب…'
+                                  : 'إنشاء حساب',
+                              style: const TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Google Sign Up (`إنشاء حساب باستخدام Google`)
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const GoogleConsentScreen(),
+                                ),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: textPrimary,
+                              side: BorderSide(color: borderColor, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            icon: Text(
+                              'G',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: primaryColor,
+                              ),
+                            ),
+                            label: const Text(
+                              'إنشاء حساب باستخدام Google',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginFormScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'لديك حساب بالفعل؟ تسجيل الدخول',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: primaryColor,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // ─── Submit button ───────────────────────────────────────────
-              Semantics(
-                label: authState.isLoading
-                    ? 'Sending verification code, please wait'
-                    : 'Continue to verification',
-                button: true,
-                child: SizedBox(
-                  height: 64,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: authState.isLoading ? null : _handleRegister,
-                    child: authState.isLoading
-                        ? const SizedBox(
-                            width: 26,
-                            height: 26,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Continue to Verification',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ─── Login link ──────────────────────────────────────────────
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginFormScreen(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Already have an account? Log in',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: primaryColor,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Shared widgets ──────────────────────────────────────────────────────────
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.label, required this.isDark});
-  final String label;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message, required this.isDark});
-  final String message;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
-    final containerColor = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: containerColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: emergencyColor, width: 2),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_rounded, color: emergencyColor, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                color: emergencyColor,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
+                ],
               ),
             ),
           ),

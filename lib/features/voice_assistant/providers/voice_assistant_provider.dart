@@ -1,91 +1,219 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../doctors/data/models/doctor_model.dart';
-import '../../doctors/providers/doctors_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/repositories/rafiq_repositories.dart';
+import '../../../core/services/rafiq_api_service.dart';
 import '../data/models/voice_chat_models.dart';
 import '../data/models/voice_interaction_model.dart';
 
 export '../data/models/voice_chat_models.dart';
 
-class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantStateData> {
-  VoiceAssistantNotifier()
-      : super(
+/// Events for the 9-Step AI Voice Pipeline State Machine (`VoiceAssistantBloc`).
+sealed class VoiceAssistantEvent {
+  const VoiceAssistantEvent();
+}
+
+class VoiceListeningStarted extends VoiceAssistantEvent {
+  const VoiceListeningStarted();
+}
+
+class VoiceListeningCancelled extends VoiceAssistantEvent {
+  const VoiceListeningCancelled();
+}
+
+class VoiceCommandSubmitted extends VoiceAssistantEvent {
+  const VoiceCommandSubmitted(
+    this.spokenText, {
+    this.voicePersona = 'warm',
+    this.speechRate = 1.0,
+  });
+
+  final String spokenText;
+  final String voicePersona;
+  final double speechRate;
+}
+
+/// Event-Driven Finite State Machine (`Bloc`) for Sequence Diagrams 1 & 2:
+/// `Idle -> Listening -> Processing (FastAPI NLU) -> Repository Execution -> Speaking -> Idle`.
+///
+/// Key Senior Engineering guarantees:
+/// 1. **Tremor / Multi-Tap Protection**: Drops duplicate `VoiceCommandSubmitted`
+///    events while `state.state == VoiceAssistantState.processing`.
+/// 2. **Zero Controller Coupling**: Updates medications through `MedicationRepository`
+///    instead of holding a reference to `RemindersCubit`.
+class VoiceAssistantBloc
+    extends Bloc<VoiceAssistantEvent, VoiceAssistantStateData> {
+  VoiceAssistantBloc({
+    RafiqApiService? apiService,
+    required MedicationRepository medicationRepository,
+  })  : _api = apiService ?? RafiqApiService(),
+        _medicationRepository = medicationRepository,
+        super(
           VoiceAssistantStateData(
             state: VoiceAssistantState.idle,
             history: const [
               ChatBubble(
                 kind: ChatBubbleKind.assistant,
-                text: 'Hello Adel! How can I help you today?',
+                text: 'صباح الخير يا عادل! هل أخذت حبة الضغط؟',
+              ),
+              ChatBubble(
+                kind: ChatBubbleKind.user,
+                text: '«نعم، أخذتها الآن مع الفطور.»',
+              ),
+              ChatBubble(
+                kind: ChatBubbleKind.doseLogged,
+                badgeTitle: '✓ سُجّلت الجرعة',
+                text: 'رائع! جرعتك القادمة الساعة ٢:٠٠ م.',
               ),
             ],
           ),
-        );
+        ) {
+    on<VoiceListeningStarted>(_onListeningStarted);
+    on<VoiceListeningCancelled>(_onListeningCancelled);
+    on<VoiceCommandSubmitted>(_onCommandSubmitted);
+  }
 
-  void startListening() {
-    state = state.copyWith(
-      state: VoiceAssistantState.listening,
-      currentTranscript: 'Listening...',
+  final RafiqApiService _api;
+  final MedicationRepository _medicationRepository;
+
+  void _onListeningStarted(
+    VoiceListeningStarted event,
+    Emitter<VoiceAssistantStateData> emit,
+  ) {
+    emit(
+      state.copyWith(
+        state: VoiceAssistantState.listening,
+        currentTranscript: 'جارٍ الاستماع… تحدث الآن',
+      ),
     );
   }
 
-  Future<void> stopListeningAndProcess(String samplePhrase) async {
-    final userBubble = ChatBubble(kind: ChatBubbleKind.user, text: samplePhrase);
-    state = state.copyWith(
-      state: VoiceAssistantState.processing,
-      currentTranscript: samplePhrase,
-      history: [...state.history, userBubble],
+  void _onListeningCancelled(
+    VoiceListeningCancelled event,
+    Emitter<VoiceAssistantStateData> emit,
+  ) {
+    emit(
+      state.copyWith(
+        state: VoiceAssistantState.idle,
+        currentTranscript: '',
+      ),
+    );
+  }
+
+  Future<void> _onCommandSubmitted(
+    VoiceCommandSubmitted event,
+    Emitter<VoiceAssistantStateData> emit,
+  ) async {
+    // Tremor / double-tap guard: ignore duplicate commands while processing
+    if (state.state == VoiceAssistantState.processing) return;
+
+    final formattedUserText = event.spokenText.startsWith('«')
+        ? event.spokenText
+        : '«${event.spokenText}»';
+    final updatedWithUser = [
+      ...state.history,
+      ChatBubble(kind: ChatBubbleKind.user, text: formattedUserText),
+    ];
+
+    emit(
+      state.copyWith(
+        state: VoiceAssistantState.processing,
+        currentTranscript: event.spokenText,
+        history: updatedWithUser,
+      ),
     );
 
-    await Future.delayed(const Duration(milliseconds: 700));
+    final aiResult = await _api.processVoiceInteraction(
+      userId: 'user_01',
+      spokenText: event.spokenText,
+      voicePersona: event.voicePersona,
+      speechRate: event.speechRate,
+    );
 
-    String intent = 'GENERAL_QUESTION';
-    String responseText = 'I am here to help. You can ask about reminders, doctors, or family.';
-    List<DoctorModel> doctors = const [];
+    if (isClosed) return;
 
-    final lower = samplePhrase.toLowerCase();
-    if (lower.contains('دواء') || lower.contains('medicine') || lower.contains('remind')) {
-      intent = 'CREATE_REMINDER';
-      responseText = 'Medication reminder saved for this evening.';
-    } else if (lower.contains('طبيب') ||
-        lower.contains('دكتور') ||
-        lower.contains('doctor')) {
-      intent = 'FIND_DOCTOR';
-      responseText = 'I found some doctors near you. Here are the top options:';
-      doctors = DoctorsNotifier.mockDoctors.take(2).toList();
-    } else if (lower.contains('طوارئ') ||
-        lower.contains('help') ||
-        lower.contains('emergency')) {
-      intent = 'EMERGENCY';
-      responseText = 'I can take you to Emergency Help. Use the Emergency card on Home if you need it now.';
+    final newBubbles = <ChatBubble>[...updatedWithUser];
+
+    if (aiResult.intent == 'LOG_DOSE' || aiResult.doseLogged) {
+      // Mutates canonical MedicationRepository; RemindersCubit updates reactively via Stream!
+      final medTitle = _medicationRepository.logDoseByMedicationName(
+        aiResult.medicationName,
+      );
+      newBubbles.add(
+        ChatBubble(
+          kind: ChatBubbleKind.doseLogged,
+          badgeTitle: '✓ سُجّلت الجرعة ($medTitle)',
+          text: aiResult.responseText,
+        ),
+      );
+    } else if (aiResult.intent == 'FIND_HOSPITAL' ||
+        aiResult.intent == 'FIND_DOCTOR') {
+      newBubbles.add(
+        ChatBubble(
+          kind: ChatBubbleKind.assistant,
+          text: aiResult.responseText,
+        ),
+      );
+      newBubbles.add(
+        ChatBubble(
+          kind: ChatBubbleKind.doctors,
+          text: 'المستشفيات القريبة منك',
+          doctors: HealthcareRepository.initialHospitals,
+        ),
+      );
+    } else if (aiResult.intent == 'CALL_FAMILY') {
+      newBubbles.add(
+        ChatBubble(
+          kind: ChatBubbleKind.familyCall,
+          badgeTitle: '📞 اتصال بالعائلة · ليلى (الابنة)',
+          text: aiResult.responseText,
+        ),
+      );
+    } else {
+      newBubbles.add(
+        ChatBubble(
+          kind: ChatBubbleKind.assistant,
+          text: aiResult.responseText,
+        ),
+      );
     }
 
     final interaction = VoiceInteractionModel(
-      interactionId: DateTime.now().millisecondsSinceEpoch.toString(),
+      interactionId: 'int_${DateTime.now().millisecondsSinceEpoch}',
       userId: 'user_01',
-      transcript: samplePhrase,
-      detectedIntent: intent,
-      responseText: responseText,
+      transcript: event.spokenText,
+      detectedIntent: aiResult.intent,
+      responseText: aiResult.responseText,
       timestamp: DateTime.now(),
     );
 
-    final nextHistory = [
-      ...state.history,
-      ChatBubble(kind: ChatBubbleKind.assistant, text: responseText),
-      if (doctors.isNotEmpty)
-        ChatBubble(kind: ChatBubbleKind.doctors, text: '', doctors: doctors),
-    ];
-
-    state = state.copyWith(
-      state: VoiceAssistantState.speaking,
-      lastInteraction: interaction,
-      history: nextHistory,
+    emit(
+      state.copyWith(
+        state: VoiceAssistantState.speaking,
+        history: newBubbles,
+        lastInteraction: interaction,
+      ),
     );
 
     await Future.delayed(const Duration(milliseconds: 900));
-    state = state.copyWith(state: VoiceAssistantState.idle);
+    if (!isClosed) {
+      emit(state.copyWith(state: VoiceAssistantState.idle));
+    }
   }
+
+  // Convenience dispatchers
+  void startListening() => add(const VoiceListeningStarted());
+  void cancelListening() => add(const VoiceListeningCancelled());
+  void simulateUserCommand(
+    String spokenText, {
+    String voicePersona = 'warm',
+    double speechRate = 1.0,
+  }) =>
+      add(
+        VoiceCommandSubmitted(
+          spokenText,
+          voicePersona: voicePersona,
+          speechRate: speechRate,
+        ),
+      );
 }
 
-final voiceAssistantProvider =
-    StateNotifierProvider.autoDispose<VoiceAssistantNotifier, VoiceAssistantStateData>(
-  (ref) => VoiceAssistantNotifier(),
-);
+typedef VoiceAssistantNotifier = VoiceAssistantBloc;

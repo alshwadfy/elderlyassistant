@@ -1,64 +1,28 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/repositories/rafiq_repositories.dart';
 import '../data/models/doctor_model.dart';
 
-class DoctorsNotifier extends StateNotifier<List<DoctorModel>> {
-  DoctorsNotifier() : super(_mockDoctors);
+/// Nearby Hospitals Cubit (`المستشفيات القريبة` — Sequence Diagram 2).
+class DoctorsCubit extends Cubit<List<DoctorModel>> {
+  DoctorsCubit({HealthcareRepository? repository})
+      : _repository = repository ?? HealthcareRepository(),
+        super(HealthcareRepository.initialHospitals);
 
-  static List<DoctorModel> get mockDoctors => _mockDoctors;
+  final HealthcareRepository _repository;
 
-  static final List<DoctorModel> _mockDoctors = [
-    DoctorModel(
-      providerId: 'doc_1',
-      name: 'Dr. Ahmed Hassan',
-      type: 'General Practitioner',
-      address: 'Medical Center',
-      distanceKm: 1.2,
-      estimatedMinutes: 5,
-    ),
-    DoctorModel(
-      providerId: 'doc_2',
-      name: 'Dr. Salma Abdelaziz',
-      type: 'Internal Medicine',
-      address: 'City Hospital',
-      distanceKm: 2.4,
-      estimatedMinutes: 8,
-    ),
-    DoctorModel(
-      providerId: 'doc_3',
-      name: 'Dr. Karim Nabil',
-      type: 'Cardiology',
-      address: 'Heart Clinic',
-      distanceKm: 3.1,
-      estimatedMinutes: 12,
-    ),
-    DoctorModel(
-      providerId: 'doc_4',
-      name: 'Dr. Laila Mostafa',
-      type: 'Dermatology',
-      address: 'Skin Care Center',
-      distanceKm: 4.0,
-      estimatedMinutes: 15,
-    ),
-  ];
+  static List<DoctorModel> get mockDoctors =>
+      HealthcareRepository.initialHospitals;
+
+  void filterBySpecialtyOrQuery({
+    String specialty = 'الكل',
+    String query = '',
+  }) {
+    emit(_repository.filterHospitals(specialty: specialty, query: query));
+  }
 
   void filterByType(String type) {
-    if (type == 'All') {
-      state = _mockDoctors;
-      return;
-    }
-    if (type == 'General') {
-      state = _mockDoctors
-          .where((doc) => doc.type.toLowerCase().contains('general') ||
-              doc.type.toLowerCase().contains('internal'))
-          .toList();
-      return;
-    }
-    state = _mockDoctors
-        .where((doc) => doc.type.toLowerCase().contains(type.toLowerCase()))
-        .toList();
+    filterBySpecialtyOrQuery(specialty: type);
   }
 }
 
-final doctorsProvider = StateNotifierProvider.autoDispose<DoctorsNotifier, List<DoctorModel>>((ref) {
-  return DoctorsNotifier();
-});
+typedef DoctorsNotifier = DoctorsCubit;

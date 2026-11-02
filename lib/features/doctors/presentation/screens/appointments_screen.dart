@@ -1,672 +1,420 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/demo_snackbar.dart';
-import '../../data/models/appointment_model.dart';
+import '../../../../core/widgets/rafiq_emergency_bar.dart';
+import '../../../../core/widgets/rafiq_sky_header.dart';
+import '../../../emergency/presentation/screens/emergency_screen.dart';
 import '../../providers/appointments_provider.dart';
 
-class AppointmentsScreen extends ConsumerStatefulWidget {
-  const AppointmentsScreen({super.key});
+/// Next Visit (`زيارتي القادمة`) matching Figma `#10:2945` (Day) & `#10:2989` (Night)
+/// and Sequence Diagram 4 (Read-Only Family Caregiver Visit Plan with Assigned Companion).
+class AppointmentsScreen extends StatelessWidget {
+  const AppointmentsScreen({super.key, this.onBackToHome});
+
+  final VoidCallback? onBackToHome;
 
   @override
-  ConsumerState<AppointmentsScreen> createState() => _AppointmentsScreenState();
-}
+  Widget build(BuildContext context) {
+    final appointments = context.watch<AppointmentsCubit>().state;
+    final nextVisit = appointments.first;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+    final bgColor = isDark ? AppColorsDark.background : AppColors.background;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColorsDark.textSecondary
+        : AppColors.textSecondary;
+    final primaryColor = isDark
+        ? AppColorsDark.primary
+        : AppColors.rafiqPrimary;
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _showAddAppointmentDialog(bool isDark) async {
-    final l10n = AppLocalizations.of(context);
-    final doctorNameController = TextEditingController();
-    final specialtyController = TextEditingController(text: 'General Practitioner');
-
-    DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
-    TimeOfDay selectedTime = const TimeOfDay(hour: 10, minute: 0);
-
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
-    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
-    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
-
-    final saved = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: Row(
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: Column(
+        children: [
+          RafiqSkyHeader(
+            title: 'زيارتي القادمة',
+            subtitle: 'سجل عائلي · تفاصيل الزيارة والمرافق المحدد',
+            onBack: onBackToHome ??
+                () {
+                  Navigator.of(context).maybePop();
+                },
+            backLabel: 'رجوع',
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Main Visit Plan Card (`#10:2956`)
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: primaryContainer,
-                      borderRadius: BorderRadius.circular(10),
+                      color: surfaceColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: borderColor, width: 1.6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.30 : 0.06,
+                          ),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: Icon(Icons.calendar_month, color: primaryColor),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(l10n.addNewAppointment, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textPrimary)),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Doctor Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: doctorNameController,
-                      style: TextStyle(fontSize: 16, color: textPrimary),
-                      decoration: const InputDecoration(
-                        hintText: 'e.g. Dr. Ahmed Hassan',
-                        prefixIcon: Icon(Icons.person_outline),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text('Specialty', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: specialtyController,
-                      style: TextStyle(fontSize: 16, color: textPrimary),
-                      decoration: const InputDecoration(
-                        hintText: 'e.g. Cardiology',
-                        prefixIcon: Icon(Icons.medical_information_outlined),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary)),
-                    const SizedBox(height: 8),
-                    Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate,
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime.now().add(const Duration(days: 180)),
-                              );
-                              if (picked != null) {
-                                setDialogState(() => selectedDate = picked);
-                              }
-                            },
-                            icon: const Icon(Icons.event, size: 18),
-                            label: Text('${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 48),
-                              foregroundColor: primaryColor,
+                        // Top Chip: `الزيارة القادمة` + `سجل عائلي`
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                'الزيارة القادمة',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryColor,
+                                ),
+                              ),
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColorsDark.surfaceVariant
+                                    : const Color(0xFFF3F6FF),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(color: borderColor),
+                              ),
+                              child: Text(
+                                'سجل عائلي',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Hospital Name (`مستشفى الأمل`) & Specialty (`العيادات الخارجية · القلب`)
+                        Row(
+                          children: [
+                            Container(
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(
+                                Icons.local_hospital_rounded,
+                                color: primaryColor,
+                                size: 30,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    nextVisit.hospitalName,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      color: textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${nextVisit.department} • ${nextVisit.specialty}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Date & Time Chips (`٢٩ أكتوبر ٢٠٢٦` · `١٠:٠٠ ص`)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? AppColorsDark.surfaceVariant
+                                      : const Color(0xFFF5F8FF),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: borderColor),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today_rounded,
+                                      size: 20,
+                                      color: primaryColor,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        nextVisit.dateLabelAr,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          color: textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColorsDark.surfaceVariant
+                                    : const Color(0xFFF5F8FF),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: borderColor),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time_filled_rounded,
+                                    size: 20,
+                                    color: primaryColor,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    nextVisit.timeLabelAr,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Location Row (`المكان`: `١٤ شارع الجلاء، مصر الجديدة، القاهرة`)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColorsDark.surfaceVariant
+                                : const Color(0xFFF8FAFF),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: borderColor),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_rounded,
+                                color: primaryColor,
+                                size: 26,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'المكان',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: textSecondary,
+                                      ),
+                                    ),
+                                    Text(
+                                      nextVisit.address,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final picked = await showTimePicker(
-                                context: context,
-                                initialTime: selectedTime,
-                              );
-                              if (picked != null) {
-                                setDialogState(() => selectedTime = picked);
-                              }
-                            },
-                            icon: const Icon(Icons.access_time, size: 18),
-                            label: Text(selectedTime.format(context)),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 48),
-                              foregroundColor: primaryColor,
+                        const SizedBox(height: 16),
+
+                        // Assigned Family Companion Card (`المرافق المحدد`: `فاطمة أحمد` `#10:2978`)
+                        Text(
+                          'المرافق المحدد',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColorsDark.primaryContainer
+                                : AppColors.rafiqPrimaryTint,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: primaryColor.withValues(alpha: 0.45),
+                              width: 1.5,
                             ),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor: primaryColor,
+                                child: const Text(
+                                  'ف',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      nextVisit.companionName,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      nextVisit.companionRelation,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'اتصال بالمرافق',
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '📞 جارٍ الاتصال بـ ${nextVisit.companionName}…',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.phone_in_talk_rounded,
+                                  color: primaryColor,
+                                  size: 26,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Clarification Note Banner (`#10:2985`)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColorsDark.surfaceVariant
+                                : const Color(0xFFF3F6FF),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: borderColor),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                color: textSecondary,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  nextVisit.familyNote,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: textSecondary,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              actions: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(dialogContext, false),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(0, 48),
-                          foregroundColor: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
+                  ),
+                  const SizedBox(height: 18),
+                  RafiqEmergencyButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const EmergencyScreen(),
                         ),
-                        child: Text(l10n.cancel),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(dialogContext, true),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 48),
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: Text(l10n.save),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (saved == true && doctorNameController.text.trim().isNotEmpty) {
-      final appointmentDateTime = DateTime(
-        selectedDate.year,
-        selectedDate.month,
-        selectedDate.day,
-        selectedTime.hour,
-        selectedTime.minute,
-      );
-
-      ref.read(appointmentsProvider.notifier).addAppointment(
-            AppointmentModel(
-              appointmentId: 'app_${DateTime.now().millisecondsSinceEpoch}',
-              doctorId: 'doc_custom',
-              doctorName: doctorNameController.text.trim(),
-              doctorType: specialtyController.text.trim().isEmpty
-                  ? 'General Practitioner'
-                  : specialtyController.text.trim(),
-              dateTime: appointmentDateTime,
-              status: 'Upcoming',
-            ),
-          );
-
-      if (mounted) {
-        showDemoSnackBar(
-          context,
-          'New appointment scheduled with ${doctorNameController.text.trim()}',
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-    final appointments = ref.watch(appointmentsProvider);
-    final upcoming =
-        appointments.where((a) => a.status == 'Upcoming').toList();
-    final past = appointments.where((a) => a.status == 'Past' || a.status == 'Cancelled').toList();
-
-    return Column(
-      children: [
-        // ─── Static Screen Header (matches RemindersScreen exactly) ───
-        Container(
-          padding: const EdgeInsets.fromLTRB(8, 8, 16, 12),
-          decoration: BoxDecoration(
-            color: isDark ? AppColorsDark.surface : AppColors.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const BackButtonIcon(),
-                tooltip: l10n.back,
-                onPressed: () {
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.of(context).pop();
-                  } else {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/home',
-                      (route) => false,
-                    );
-                  }
-                },
-              ),
-              const SizedBox(width: 4),
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 28),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.myAppointments,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: textPrimary,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      l10n.manageAppointments,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // ─── Compact TabBar ───
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: isDark ? AppColorsDark.surface : AppColors.chipUnselected,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.all(4),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.2),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                      );
+                    },
                   ),
                 ],
               ),
-              labelColor: Colors.white,
-              unselectedLabelColor: textSecondary,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              tabs: [
-                Tab(text: '${l10n.upcoming} (${upcoming.length})'),
-                Tab(text: '${l10n.past} (${past.length})'),
-              ],
             ),
-          ),
-        ),
-
-        // ─── Scrollable Tab Content ───
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _AppointmentList(
-                items: upcoming,
-                onAddPressed: () => _showAddAppointmentDialog(isDark),
-              ),
-              _AppointmentList(
-                items: past,
-                onAddPressed: () => _showAddAppointmentDialog(isDark),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AppointmentList extends StatelessWidget {
-  const _AppointmentList({
-    required this.items,
-    required this.onAddPressed,
-  });
-
-  final List<AppointmentModel> items;
-  final VoidCallback onAddPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-      children: [
-        if (items.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: Center(
-              child: Text(
-                l10n.noAppointments,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: textSecondary,
-                ),
-              ),
-            ),
-          )
-        else
-          for (final item in items)
-            _AppointmentCard(appt: item),
-
-        const SizedBox(height: 12),
-
-        // ─── Add Appointment Button (scrolls inside list, matches RemindersScreen) ───
-        ElevatedButton.icon(
-          onPressed: onAddPressed,
-          icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
-          label: Text(
-            l10n.addNewAppointment,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 56),
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AppointmentCard extends ConsumerWidget {
-  const _AppointmentCard({required this.appt});
-
-  final AppointmentModel appt;
-
-  Future<void> _cancelAppointment(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: isDark ? AppColorsDark.surface : AppColors.surface,
-          title: Text(l10n.cancelAppointment, style: TextStyle(color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary)),
-          content: Text(l10n.confirmCancel(appt.doctorName), style: TextStyle(color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.keepAppointment),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: emergencyColor),
-              child: Text(l10n.cancelAppointment),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true) {
-      ref
-          .read(appointmentsProvider.notifier)
-          .cancelAppointment(appt.appointmentId);
-      if (context.mounted) {
-        showDemoSnackBar(
-          context,
-          'Appointment with ${appt.doctorName} cancelled',
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
-    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
-    final emergencyContainer = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
-    final textPrimary = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-    final surface = isDark ? AppColorsDark.surface : AppColors.surface;
-    final border = isDark ? AppColorsDark.border : AppColors.border;
-
-    final isCancelled = appt.status == 'Cancelled';
-    final isUpcoming = appt.status == 'Upcoming';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: border,
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
           ),
         ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: isCancelled ? emergencyContainer : primaryContainer,
-                  child: Icon(
-                    isCancelled ? Icons.event_busy_rounded : Icons.medical_information_rounded,
-                    color: isCancelled ? emergencyColor : primaryColor,
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              appt.doctorName,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 17,
-                                color: textPrimary,
-                                decoration: isCancelled
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          _AppointmentStatusBadge(status: appt.status, l10n: l10n, isDark: isDark),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        appt.doctorType,
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time_rounded, size: 16, color: primaryColor),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              _formatAppointment(appt.dateTime),
-                              style: TextStyle(
-                                color: textSecondary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (isUpcoming) ...[
-              const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () => _cancelAppointment(context, ref),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(130, 44),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      foregroundColor: emergencyColor,
-                      side: BorderSide(color: emergencyColor, width: 2.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    icon: const Icon(Icons.cancel_outlined, size: 18),
-                    label: Text(l10n.cancel, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-String _formatAppointment(DateTime dateTime) {
-  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  final weekday = weekdays[dateTime.weekday - 1];
-  final month = months[dateTime.month - 1];
-  final hour = dateTime.hour == 0
-      ? 12
-      : (dateTime.hour > 12 ? dateTime.hour - 12 : dateTime.hour);
-  final minute = dateTime.minute.toString().padLeft(2, '0');
-  final period = dateTime.hour >= 12 ? 'PM' : 'AM';
-  return '$weekday, $month ${dateTime.day}, ${dateTime.year}  •  $hour:$minute $period';
-}
-
-class _AppointmentStatusBadge extends StatelessWidget {
-  const _AppointmentStatusBadge({
-    required this.status,
-    required this.l10n,
-    required this.isDark,
-  });
-
-  final String status;
-  final AppLocalizations l10n;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
-    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
-    final emergencyContainer = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
-    final chipUnselected = isDark ? AppColorsDark.chipUnselected : AppColors.chipUnselected;
-    final textSecondary = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-
-    final (label, bgColor, textColor) = switch (status) {
-      'Upcoming' => (l10n.upcoming, primaryContainer, primaryColor),
-      'Cancelled' => (l10n.cancelled, emergencyContainer, emergencyColor),
-      _ => (l10n.past, chipUnselected, textSecondary),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: textColor,
-        ),
       ),
     );
   }

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import 'demo_snackbar.dart';
 
 /// Floating Action Button that triggers the Accessibility Quick Actions Menu.
-class AccessibilityFloatingButton extends ConsumerWidget {
+class AccessibilityFloatingButton extends StatelessWidget {
   const AccessibilityFloatingButton({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
@@ -62,16 +62,16 @@ class AccessibilityFloatingButton extends ConsumerWidget {
 }
 
 /// The Accessibility Quick Actions bottom sheet modal.
-class AccessibilityMenuSheet extends ConsumerWidget {
+class AccessibilityMenuSheet extends StatelessWidget {
   const AccessibilityMenuSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
-    final a11y = ref.watch(accessibilityProvider);
-    final notifier = ref.read(accessibilityProvider.notifier);
+    final a11y = context.watch<AppSettingsCubit>().state.accessibility;
+    final cubit = context.read<AppSettingsCubit>();
 
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
     final primaryContainer =
@@ -121,7 +121,6 @@ class AccessibilityMenuSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Drag handle
             Center(
               child: Container(
                 width: 44,
@@ -133,8 +132,6 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Header: Title & Close
             Row(
               children: [
                 Container(
@@ -168,8 +165,6 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
-
-            // ─── 1. Font Size Control ───
             _A11yControlCard(
               title: l10n.fontSize,
               valueLabel: fontPercent,
@@ -177,11 +172,11 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               isDark: isDark,
               onDecrease: () {
                 HapticFeedback.selectionClick();
-                notifier.decreaseFontSize();
+                cubit.decreaseFontSize();
               },
               onIncrease: () {
                 HapticFeedback.selectionClick();
-                notifier.increaseFontSize();
+                cubit.increaseFontSize();
               },
               decreaseTooltip: l10n.decreaseFontSize,
               increaseTooltip: l10n.increaseFontSize,
@@ -189,8 +184,6 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               increaseIconText: 'A+',
             ),
             const SizedBox(height: 14),
-
-            // ─── 2. Text Spacing Control ───
             _A11yControlCard(
               title: l10n.textSpacing,
               valueLabel: spacingText,
@@ -198,11 +191,11 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               isDark: isDark,
               onDecrease: () {
                 HapticFeedback.selectionClick();
-                notifier.decreaseTextSpacing();
+                cubit.decreaseTextSpacing();
               },
               onIncrease: () {
                 HapticFeedback.selectionClick();
-                notifier.increaseTextSpacing();
+                cubit.increaseTextSpacing();
               },
               decreaseTooltip: l10n.decreaseTextSpacing,
               increaseTooltip: l10n.increaseTextSpacing,
@@ -210,8 +203,6 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               increaseIcon: Icons.add_rounded,
             ),
             const SizedBox(height: 14),
-
-            // ─── 3. Contrast Level Control ───
             _A11yControlCard(
               title: l10n.contrast,
               valueLabel: contrastText,
@@ -219,11 +210,11 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               isDark: isDark,
               onDecrease: () {
                 HapticFeedback.selectionClick();
-                notifier.decreaseContrast();
+                cubit.decreaseContrast();
               },
               onIncrease: () {
                 HapticFeedback.selectionClick();
-                notifier.increaseContrast();
+                cubit.increaseContrast();
               },
               decreaseTooltip: l10n.decreaseContrast,
               increaseTooltip: l10n.increaseContrast,
@@ -231,8 +222,6 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               increaseIcon: Icons.add_rounded,
             ),
             const SizedBox(height: 14),
-
-            // ─── 4. High Contrast Mode Toggle ───
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
@@ -279,15 +268,13 @@ class AccessibilityMenuSheet extends ConsumerWidget {
                     activeTrackColor: primaryColor,
                     onChanged: (val) {
                       HapticFeedback.selectionClick();
-                      notifier.toggleHighContrast();
+                      cubit.toggleHighContrast();
                     },
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-
-            // ─── 5. Read Aloud Button ───
             ElevatedButton.icon(
               onPressed: () {
                 HapticFeedback.mediumImpact();
@@ -310,12 +297,10 @@ class AccessibilityMenuSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-
-            // ─── 6. Reset to Defaults ───
             TextButton.icon(
               onPressed: () {
                 HapticFeedback.lightImpact();
-                notifier.resetDefaults();
+                cubit.resetDefaults();
                 showDemoSnackBar(context, l10n.resetDefaults);
               },
               icon: const Icon(Icons.restore_rounded, size: 22),
@@ -423,7 +408,6 @@ class _A11yControlCard extends StatelessWidget {
               ],
             ),
           ),
-          // Step Down Button (min 48x48)
           Semantics(
             button: true,
             label: decreaseTooltip,
@@ -459,7 +443,6 @@ class _A11yControlCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Step Up Button (min 48x48)
           Semantics(
             button: true,
             label: increaseTooltip,

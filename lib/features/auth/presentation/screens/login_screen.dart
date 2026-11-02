@@ -1,220 +1,234 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_logo.dart';
+import '../../../../core/widgets/rafiq_sky_header.dart';
 import 'login_form_screen.dart';
 import 'onboarding_screen.dart';
+import 'register_screen.dart';
 
-/// Login / Welcome screen — matches the Figma UI (media_1790862407812.png).
-///
-/// Top: AI Elderly Assistant logo
-/// Center: "Your voice. Our support." headline + subtitle + "Get Started" & "Log In" buttons
-/// Bottom: Photo of elderly woman holding phone with audio wave badge.
+/// Welcome Screen (`مرحباً بك في رفيق` `#107:44` Day & `#107:60` Night).
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final settings = context.watch<AppSettingsCubit>().state;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final textPrimary = isDark ? AppColorsDark.textPrimary : const Color(0xFF1E3A8A);
-    final textSecondary = isDark ? AppColorsDark.textSecondary : const Color(0xFF4B6B94);
-    final bgColor = isDark ? AppColorsDark.background : const Color(0xFFF0F5FA);
+    final bgColor = isDark ? AppColorsDark.background : AppColors.background;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColorsDark.textSecondary
+        : AppColors.textSecondary;
+    final primaryColor = isDark
+        ? AppColorsDark.primary
+        : AppColors.rafiqPrimary;
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // ─── Header: App Logo ───
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Row(
+      body: Column(
+        children: [
+          RafiqSkyHeader(
+            title: 'أهلاً بك في رفيق',
+            subtitle: 'رفيقك في كل يوم، لراحة بالك.',
+            height: 185,
+            trailingAction: Semantics(
+              button: true,
+              label: 'تغيير اللغة / Switch Language',
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () =>
+                      context.read<AppSettingsCubit>().toggleLocale(),
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.16)
+                          : Colors.white.withValues(alpha: 0.88),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.language_rounded,
+                          size: 18,
+                          color: isDark ? Colors.white : AppColors.textPrimary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          settings.isArabic ? 'AR / EN' : 'EN / AR',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: isDark
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const AppLogo(size: 38),
-                  const SizedBox(width: 12),
+                  // Official Rafiq Logo Card (`#105:285` Day / `#107:75` Night)
+                  Center(
+                    child: Container(
+                      width: 170,
+                      height: 215,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: surfaceColor,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: borderColor, width: 1.8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.35 : 0.08,
+                            ),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: AppLogo(size: 138, height: 185),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
                   Text(
-                    'AI Elderly Assistant',
+                    'أهلاً بك في رفيق',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 19,
+                      fontSize: 28,
                       fontWeight: FontWeight.w800,
                       color: textPrimary,
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ─── Headline & Subtitle ───
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Column(
-                children: [
+                  const SizedBox(height: 8),
                   Text(
-                    'Your voice. Our support.',
+                    'رفيقك في كل يوم، لراحة بالك.\nمعك، خطوة بخطوة.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      color: textPrimary,
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Simple help for a safer,\nhealthier and more connected life.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                       color: textSecondary,
                       height: 1.45,
                     ),
                   ),
-                ],
-              ),
-            ),
+                  const SizedBox(height: 24),
 
-            const SizedBox(height: 24),
-
-            // ─── Action Buttons ───
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Column(
-                children: [
-                  // Get Started (filled primary)
-                  Semantics(
-                    button: true,
-                    label: 'Get started and set up your assistant',
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
+                  // Primary CTA: `تسجيل الدخول` (`#107:53` / `#107:69`)
+                  SizedBox(
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LoginFormScreen(),
                           ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const OnboardingScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Get Started',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.2,
-                          ),
+                      ),
+                      child: const Text(
+                        'تسجيل الدخول',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 12),
 
-                  // Login (white with blue outline)
-                  Semantics(
-                    button: true,
-                    label: 'Log in to your existing account',
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: isDark ? AppColorsDark.surface : Colors.white,
-                          foregroundColor: primaryColor,
-                          side: BorderSide(
-                            color: primaryColor.withValues(alpha: 0.6),
-                            width: 1.8,
+                  // Secondary CTA: `إنشاء حساب جديد` (`#107:56` / `#107:72`)
+                  SizedBox(
+                    height: 58,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
                           ),
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: surfaceColor,
+                        foregroundColor: textPrimary,
+                        side: BorderSide(color: borderColor, width: 1.8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginFormScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Log In',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      ),
+                      child: const Text(
+                        'إنشاء حساب جديد',
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
+                  const SizedBox(height: 12),
 
-            const SizedBox(height: 16),
-
-            // ─── Elderly Woman Photo at Bottom ───
-            Expanded(
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  Positioned.fill(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Image.asset(
-                        'assets/elderly-assistant-photo.png',
-                        fit: BoxFit.contain,
-                        alignment: Alignment.bottomCenter,
-                        semanticLabel: 'Elderly woman holding phone with AI voice assistant',
-                      ),
-                    ),
-                  ),
-
-                  // Floating audio wave badge next to the phone
-                  Positioned(
-                    right: 48,
-                    bottom: 120,
-                    child: Container(
-                      width: 54,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                  // Quick start / Meet your assistant (`تعرّف على مساعدك`)
+                  SizedBox(
+                    height: 52,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const OnboardingScreen(),
                           ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.graphic_eq_rounded,
+                        );
+                      },
+                      icon: Icon(
+                        Icons.record_voice_over_rounded,
                         color: primaryColor,
-                        size: 32,
+                      ),
+                      label: Text(
+                        'ابدأ سريعًا · تعرّف على مساعدك',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: primaryColor,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

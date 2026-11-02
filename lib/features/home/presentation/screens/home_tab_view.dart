@@ -1,240 +1,484 @@
 import 'package:flutter/material.dart';
-import '../../../../core/l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../screens/home_shell_screen.dart';
+import '../../../../core/widgets/app_logo.dart';
+import '../../../../core/widgets/rafiq_emergency_bar.dart';
+import '../../../../core/widgets/rafiq_sky_header.dart';
+import '../../../check_in/presentation/screens/daily_check_in_screen.dart';
+import '../../../doctors/presentation/screens/appointments_screen.dart';
+import '../../../emergency/presentation/screens/emergency_screen.dart';
+import '../../../emergency/presentation/screens/family_circle_screen.dart';
+import '../../../reminders/data/models/reminder_model.dart';
+import '../../../reminders/providers/reminders_provider.dart';
+import '../../../voice_assistant/presentation/screens/voice_assistant_screen.dart';
+import '../../../way_home/presentation/screens/way_home_screen.dart';
 
-/// Home tab — the landing screen users see first.
-///
-/// Design decisions per ui.md:
-/// • All body text ≥ 18sp. Greeting text 26sp.
-/// • Quick actions: vertical list (1-column), not grid — easier for elderly eyes.
-/// • One primary action visible (voice orb), supporting actions below.
-/// • Prompt chips enlarged (18sp text, 52dp height).
-/// • Every card has icon + bold label + supporting sentence — never label-only.
-/// • Full dark mode support for all components.
+/// Home – v2 (`الرئيسية`) matching Figma `#2:98` (Day) & `#7:4773` (Night).
 class HomeTabView extends StatelessWidget {
-  const HomeTabView({super.key});
+  const HomeTabView({super.key, this.onSwitchTab});
 
-  void _open(BuildContext context, String route) {
-    Navigator.of(context).pushNamed(route);
-  }
+  final ValueChanged<int>? onSwitchTab;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final settings = context.watch<AppSettingsCubit>().state;
+    final reminders = context.watch<RemindersCubit>().state;
+    final remindersNotifier = context.read<RemindersCubit>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final primaryContainer = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
-    final emergencyColor = isDark ? AppColorsDark.emergency : AppColors.emergency;
-    final emergencyContainer = isDark ? AppColorsDark.emergencyContainer : AppColors.emergencyContainer;
+    final bgColor = isDark ? AppColorsDark.background : AppColors.background;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColorsDark.textSecondary
+        : AppColors.textSecondary;
+    final primaryColor = isDark
+        ? AppColorsDark.primary
+        : AppColors.rafiqPrimary;
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    // Next active medication (`حبة الضغط` at `٢:٠٠ م`)
+    final nextMed = reminders.firstWhere(
+      (r) => r.reminderId == 'rem_bp_pill',
+      orElse: () => reminders.first,
+    );
+    final isNextMedDone = nextMed.status == 'completed';
+
+    // Daily routine items (`اشرب الماء` at `٤:٠٠ م`, `مشي المساء` at `٦:٠٠ م`)
+    final routineItems = reminders
+        .where((r) => r.type == 'routine')
+        .toList();
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: Column(
         children: [
-          // ─── Welcome / Greeting Banner ────────────────────────────────────
-          _GreetingBanner(isDark: isDark, l10n: l10n),
-
-          const SizedBox(height: 24),
-
-          // ─── Voice Orb — primary action ───────────────────────────────────
-          Center(
-            child: Semantics(
-              label: l10n.tapToSpeak,
-              button: true,
-              child: _VoiceOrb(
-                onTap: () => _open(context, AppShellRoutes.voice),
-                isDark: isDark,
-                l10n: l10n,
+          RafiqSkyHeader(
+            title: 'أهلاً , أحمد !',
+            subtitle: 'الجمعة ٩ أكتوبر',
+            trailingAction: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.14)
+                    : Colors.white.withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppLogo(size: 28, height: 34),
+                  const SizedBox(width: 6),
+                  Text(
+                    'رفيق',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-
-          const SizedBox(height: 24),
-
-          // ─── Quick-prompt chips ───────────────────────────────────────────
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            clipBehavior: Clip.none,
-            child: Row(
-              children: [
-                _PromptChip(
-                  icon: Icons.medication,
-                  label: l10n.medicationStatus,
-                  isDark: isDark,
-                  onTap: () => _open(context, AppShellRoutes.reminders),
-                ),
-                const SizedBox(width: 12),
-                _PromptChip(
-                  icon: Icons.local_hospital,
-                  label: l10n.bookDoctor,
-                  isDark: isDark,
-                  onTap: () => _open(context, AppShellRoutes.doctors),
-                ),
-                const SizedBox(width: 12),
-                _PromptChip(
-                  icon: Icons.phone_in_talk,
-                  label: l10n.callFamily,
-                  isDark: isDark,
-                  onTap: () => _open(context, AppShellRoutes.family),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
-          // ─── Section title ────────────────────────────────────────────────
-          Text(
-            'Quick Actions',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColorsDark.textPrimary : AppColors.textPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // ─── Feature list — vertical, one card per row ────────────────────
-          _FeatureListItem(
-            icon: Icons.local_hospital_outlined,
-            iconColor: primaryColor,
-            iconBg: primaryContainer,
-            title: l10n.findDoctor,
-            subtitle: l10n.findDoctorSubtitle,
-            onTap: () => _open(context, AppShellRoutes.doctors),
-          ),
-          const SizedBox(height: 14),
-          _FeatureListItem(
-            icon: Icons.medication_outlined,
-            iconColor: primaryColor,
-            iconBg: primaryContainer,
-            title: l10n.medicationReminders,
-            subtitle: l10n.neverMissMed,
-            onTap: () => _open(context, AppShellRoutes.reminders),
-          ),
-          const SizedBox(height: 14),
-          _FeatureListItem(
-            icon: Icons.people_outline,
-            iconColor: primaryColor,
-            iconBg: primaryContainer,
-            title: l10n.contactFamily,
-            subtitle: l10n.quicklyReachFamily,
-            onTap: () => _open(context, AppShellRoutes.family),
-          ),
-          const SizedBox(height: 14),
-          // Emergency — distinct visual identity
-          _FeatureListItem(
-            icon: Icons.sos_rounded,
-            iconColor: emergencyColor,
-            iconBg: emergencyContainer,
-            title: l10n.emergencyHelp,
-            subtitle: l10n.getImmediateAssistance,
-            isEmergency: true,
-            onTap: () => _open(context, AppShellRoutes.emergency),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Greeting Banner ──────────────────────────────────────────────────────────
-class _GreetingBanner extends StatelessWidget {
-  const _GreetingBanner({required this.isDark, required this.l10n});
-  final bool isDark;
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final warningColor = isDark ? AppColorsDark.warning : AppColors.warning;
-    final subtitleColor = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF141E30), const Color(0xFF1F2B44)]
-              : [const Color(0xFFE9ECFF), const Color(0xFFDDE3FF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: isDark ? 0.35 : 0.2),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Time-of-day chip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: warningColor.withValues(alpha: isDark ? 0.22 : 0.15),
-                    borderRadius: BorderRadius.circular(20),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 26),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. Next Medicine Card (`الدواء القادم · ٢:٠٠ م` — `حبة الضغط` `#2:108`)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: surfaceColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: isNextMedDone
+                            ? AppColors.successBorder
+                            : borderColor,
+                        width: 1.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.25 : 0.05,
+                          ),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'الدواء القادم · ٢:٠٠ م',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: isNextMedDone
+                                          ? AppColors.success
+                                          : primaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    nextMed.title,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                      color: textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: isNextMedDone
+                                    ? AppColors.successLight
+                                    : (isDark
+                                        ? AppColorsDark.primaryContainer
+                                        : AppColors.rafiqPrimaryTint),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(
+                                isNextMedDone
+                                    ? Icons.check_circle_rounded
+                                    : Icons.medication_rounded,
+                                color: isNextMedDone
+                                    ? AppColors.success
+                                    : primaryColor,
+                                size: 28,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              remindersNotifier.toggleStatus(nextMed.reminderId);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isNextMedDone
+                                  ? AppColors.success
+                                  : primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              isNextMedDone
+                                  ? 'تم أخذه بنجاح ✓ (اضغط للتراجع)'
+                                  : 'تم أخذه ✓',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  const SizedBox(height: 14),
+
+                  // 2. Ask Your Assistant Card (`اسأل مساعدك` `#2:118`)
+                  Semantics(
+                    button: true,
+                    label: 'اسأل مساعدك الصوتي',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const VoiceAssistantScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            color: surfaceColor,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: primaryColor.withValues(alpha: 0.45),
+                              width: 1.8,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: primaryColor,
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: const Icon(
+                                  Icons.graphic_eq_rounded,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'اسأل مساعدك',
+                                      style: TextStyle(
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w800,
+                                        color: textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'تحدّث بصوتك لتسجيل الدواء أو البحث عن مستشفى',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const AppLogo(size: 40, height: 48),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 3. Three Shortcut Tiles (`المستشفيات`, `أدويتي`, `عائلتي` `#2:133`)
+                  Row(
                     children: [
-                      Icon(Icons.wb_sunny_rounded, color: warningColor, size: 18),
-                      const SizedBox(width: 6),
-                      Text(
-                        l10n.goodMorning,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: warningColor,
+                      Expanded(
+                        child: _ShortcutSquareTile(
+                          label: 'المستشفيات',
+                          icon: Icons.local_hospital_rounded,
+                          isDark: isDark,
+                          onTap: () {
+                            if (onSwitchTab != null) {
+                              onSwitchTab!(1);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ShortcutSquareTile(
+                          label: 'أدويتي',
+                          icon: Icons.medication_rounded,
+                          isDark: isDark,
+                          onTap: () {
+                            if (onSwitchTab != null) {
+                              onSwitchTab!(2);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ShortcutSquareTile(
+                          label: 'عائلتي',
+                          icon: Icons.people_alt_rounded,
+                          isDark: isDark,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const FamilyCircleScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  l10n.goodMorningName('Adel'),
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: primaryColor,
-                    letterSpacing: -0.3,
+                  const SizedBox(height: 12),
+
+                  // 4. Two Secondary Assistance Buttons (`طمنّا عليك` `#10:3468` & `ساعدني أرجع للبيت` `#10:3472`)
+                  Row(
+                    children: [
+                      if (settings.dailyCheckInEnabled) ...[
+                        Expanded(
+                          child: _AssistanceActionTile(
+                            label: 'طمنّا عليك',
+                            icon: Icons.favorite_border_rounded,
+                            isDark: isDark,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const DailyCheckInScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      Expanded(
+                        child: _AssistanceActionTile(
+                          label: 'ساعدني أرجع للبيت',
+                          icon: Icons.home_work_outlined,
+                          isDark: isDark,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const WayHomeScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  l10n.howCanIHelp,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: subtitleColor,
+                  const SizedBox(height: 12),
+
+                  // 5. Next Visit Quick Card (`زيارتي القادمة · مستشفى الأمل`)
+                  Semantics(
+                    button: true,
+                    label: 'زيارتي القادمة مستشفى الأمل ٢٩ أكتوبر',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const AppointmentsScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: surfaceColor,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: borderColor, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Icon(
+                                  Icons.calendar_month_rounded,
+                                  color: primaryColor,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'زيارتي القادمة · مستشفى الأمل',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      '٢٩ أكتوبر · ١٠:٠٠ ص · المرافق: فاطمة أحمد',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: textSecondary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          // Decorative icon
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: isDark ? 0.2 : 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.assistant_rounded,
-              size: 36,
-              color: primaryColor,
+                  const SizedBox(height: 12),
+
+                  // 6. Daily Routine Reminders Card (`اشرب الماء` ٤:٠٠ م & `مشي المساء` ٦:٠٠ م `#2:161`)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: surfaceColor,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: borderColor, width: 1.5),
+                    ),
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < routineItems.length; i++) ...[
+                          _RoutineReminderRow(
+                            reminder: routineItems[i],
+                            isDark: isDark,
+                            onToggle: () => remindersNotifier.toggleStatus(
+                              routineItems[i].reminderId,
+                            ),
+                          ),
+                          if (i < routineItems.length - 1)
+                            Divider(color: borderColor, height: 16),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 7. Persistent Red Emergency Button (`أحتاج مساعدة` `#10:3476`)
+                  RafiqEmergencyButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const EmergencyScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -243,146 +487,62 @@ class _GreetingBanner extends StatelessWidget {
   }
 }
 
-// ─── Voice Orb ───────────────────────────────────────────────────────────────
-class _VoiceOrb extends StatelessWidget {
-  const _VoiceOrb({
-    required this.onTap,
-    required this.isDark,
-    required this.l10n,
-  });
-  final VoidCallback onTap;
-  final bool isDark;
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final textTitleColor = isDark ? AppColorsDark.textPrimary : AppColors.textPrimary;
-    final textSubtitleColor = isDark ? AppColorsDark.textSecondary : AppColors.textSecondary;
-
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 170,
-            height: 170,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF3B68C4), const Color(0xFF204899), const Color(0xFF142B60)]
-                    : [const Color(0xFF2259D0), const Color(0xFF1647AD), const Color(0xFF10275A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryColor.withValues(alpha: isDark ? 0.5 : 0.4),
-                  blurRadius: 36,
-                  spreadRadius: 6,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Inner ring decoration
-                Container(
-                  width: 142,
-                  height: 142,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      width: 2,
-                    ),
-                  ),
-                ),
-                const Icon(
-                  Icons.mic_rounded,
-                  size: 68,
-                  color: Colors.white,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 14),
-        Text(
-          l10n.tapToSpeak,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: textTitleColor,
-            letterSpacing: -0.2,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.orSayHey,
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w500,
-            color: textSubtitleColor,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─── Prompt Chip ─────────────────────────────────────────────────────────────
-class _PromptChip extends StatelessWidget {
-  const _PromptChip({
-    required this.icon,
+class _ShortcutSquareTile extends StatelessWidget {
+  const _ShortcutSquareTile({
     required this.label,
+    required this.icon,
     required this.isDark,
     required this.onTap,
   });
-  final IconData icon;
+
   final String label;
+  final IconData icon;
   final bool isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final containerColor = isDark ? AppColorsDark.primaryContainer : AppColors.primaryContainer;
-    final borderColor = isDark ? AppColorsDark.border : AppColors.primary.withValues(alpha: 0.25);
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final primaryColor = isDark
+        ? AppColorsDark.rafiqAccentBlue
+        : AppColors.rafiqPrimary;
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
 
     return Semantics(
       button: true,
       label: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(28),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
-          decoration: BoxDecoration(
-            color: containerColor,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: borderColor,
-              width: 1.5,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 96),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: borderColor, width: 1.5),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 22, color: primaryColor),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: primaryColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 30, color: primaryColor),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: textPrimary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -390,114 +550,145 @@ class _PromptChip extends StatelessWidget {
   }
 }
 
-// ─── Feature List Item — one per row, full width ─────────────────────────────
-class _FeatureListItem extends StatelessWidget {
-  const _FeatureListItem({
+class _AssistanceActionTile extends StatelessWidget {
+  const _AssistanceActionTile({
+    required this.label,
     required this.icon,
-    required this.iconColor,
-    required this.iconBg,
-    required this.title,
-    required this.subtitle,
+    required this.isDark,
     required this.onTap,
-    this.isEmergency = false,
   });
 
+  final String label;
   final IconData icon;
-  final Color iconColor;
-  final Color iconBg;
-  final String title;
-  final String subtitle;
+  final bool isDark;
   final VoidCallback onTap;
-  final bool isEmergency;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final cardBg = isEmergency
-        ? (isDark
-            ? AppColorsDark.emergencyContainer.withValues(alpha: 0.5)
-            : AppColors.emergencyContainer.withValues(alpha: 0.4))
-        : (isDark ? AppColorsDark.surface : AppColors.surface);
-
-    final borderColor = isEmergency
-        ? (isDark ? AppColorsDark.emergency.withValues(alpha: 0.5) : AppColors.emergency.withValues(alpha: 0.35))
-        : (isDark ? AppColorsDark.border : AppColors.border);
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final primaryColor = isDark
+        ? AppColorsDark.rafiqAccentBlue
+        : AppColors.rafiqPrimary;
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
 
     return Semantics(
       button: true,
-      label: '$title. $subtitle',
+      label: label,
       child: Material(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(20),
-        clipBehavior: Clip.antiAlias,
-        elevation: 0,
+        color: Colors.transparent,
         child: InkWell(
+          borderRadius: BorderRadius.circular(18),
           onTap: onTap,
-          splashColor: iconColor.withValues(alpha: 0.12),
-          highlightColor: iconColor.withValues(alpha: 0.06),
           child: Container(
-            padding: const EdgeInsets.all(18),
+            constraints: const BoxConstraints(minHeight: 56),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: borderColor,
-                width: isEmergency ? 2.0 : 1.5,
-              ),
+              color: surfaceColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: borderColor, width: 1.5),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icon badge
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: iconBg,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 30),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: isEmergency
-                              ? (isDark ? AppColorsDark.emergency : AppColors.emergency)
-                              : (isDark
-                                  ? AppColorsDark.textPrimary
-                                  : AppColors.textPrimary),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? AppColorsDark.textSecondary
-                              : AppColors.textSecondary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                Icon(icon, size: 22, color: primaryColor),
                 const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: iconColor.withValues(alpha: 0.7),
-                  size: 28,
+                Flexible(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: textPrimary,
+                    ),
+                  ),
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoutineReminderRow extends StatelessWidget {
+  const _RoutineReminderRow({
+    required this.reminder,
+    required this.isDark,
+    required this.onToggle,
+  });
+
+  final ReminderModel reminder;
+  final bool isDark;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDone = reminder.status == 'completed';
+    final textPrimary = isDark
+        ? AppColorsDark.textPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColorsDark.textSecondary
+        : AppColors.textSecondary;
+    final borderColor = isDark ? AppColorsDark.cardBorder : AppColors.cardBorder;
+    final timeBadge = reminder.repeatPattern.split('•').first.trim();
+
+    return Semantics(
+      button: true,
+      checked: isDone,
+      label: '${reminder.title} $timeBadge',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onToggle,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDone ? AppColors.success : Colors.transparent,
+                  border: Border.all(
+                    color: isDone ? AppColors.success : borderColor,
+                    width: 2,
+                  ),
+                ),
+                child: isDone
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  reminder.title,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: textPrimary,
+                    decoration: isDone ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+              Text(
+                timeBadge,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ),

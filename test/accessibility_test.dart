@@ -1,58 +1,61 @@
-import 'package:elderlyassistant/core/providers/app_settings_provider.dart';
+import 'package:elderlyassistant/core/bloc/rafiq_app_providers.dart';
 import 'package:elderlyassistant/core/l10n/app_localizations.dart';
+import 'package:elderlyassistant/core/providers/app_settings_provider.dart';
 import 'package:elderlyassistant/core/widgets/accessibility_floating_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('AccessibilityNotifier', () {
+  group('AppSettingsCubit (Accessibility)', () {
     test('font size increase and decrease clamp within bounds', () {
-      final notifier = AccessibilityNotifier();
-      expect(notifier.state.fontScale, equals(1.0));
+      final cubit = AppSettingsCubit();
+      expect(cubit.state.accessibility.fontScale, equals(1.0));
 
-      notifier.increaseFontSize();
-      expect(notifier.state.fontScale, equals(1.15));
+      cubit.increaseFontSize();
+      expect(cubit.state.accessibility.fontScale, equals(1.15));
 
-      notifier.decreaseFontSize();
-      expect(notifier.state.fontScale, equals(1.0));
+      cubit.decreaseFontSize();
+      expect(cubit.state.accessibility.fontScale, equals(1.0));
 
-      notifier.resetDefaults();
-      expect(notifier.state.fontScale, equals(1.0));
-      expect(notifier.state.letterSpacing, equals(0.0));
+      cubit.resetDefaults();
+      expect(cubit.state.accessibility.fontScale, equals(1.0));
+      expect(cubit.state.accessibility.letterSpacing, equals(0.0));
+      cubit.close();
     });
 
     test('text spacing increase and decrease', () {
-      final notifier = AccessibilityNotifier();
-      notifier.increaseTextSpacing();
-      expect(notifier.state.letterSpacing, equals(0.5));
+      final cubit = AppSettingsCubit();
+      cubit.increaseTextSpacing();
+      expect(cubit.state.accessibility.letterSpacing, equals(0.5));
 
-      notifier.decreaseTextSpacing();
-      expect(notifier.state.letterSpacing, equals(0.0));
+      cubit.decreaseTextSpacing();
+      expect(cubit.state.accessibility.letterSpacing, equals(0.0));
+      cubit.close();
     });
 
     test('toggle high contrast mode', () {
-      final notifier = AccessibilityNotifier();
-      expect(notifier.state.highContrast, isFalse);
+      final cubit = AppSettingsCubit();
+      expect(cubit.state.accessibility.highContrast, isFalse);
 
-      notifier.toggleHighContrast();
-      expect(notifier.state.highContrast, isTrue);
+      cubit.toggleHighContrast();
+      expect(cubit.state.accessibility.highContrast, isTrue);
 
-      notifier.toggleHighContrast();
-      expect(notifier.state.highContrast, isFalse);
+      cubit.toggleHighContrast();
+      expect(cubit.state.accessibility.highContrast, isFalse);
+      cubit.close();
     });
   });
 
   testWidgets('AccessibilityFloatingButton opens AccessibilityMenuSheet modal',
       (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const RafiqAppProviders(
         child: MaterialApp(
-          localizationsDelegates: const [
+          localizationsDelegates: [
             AppLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Scaffold(
+          home: Scaffold(
             floatingActionButton: AccessibilityFloatingButton(),
           ),
         ),
